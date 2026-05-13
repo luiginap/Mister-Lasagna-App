@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ordini ML">
+<meta name="theme-color" content="#185FA5">
+<title>Ordini — Lasagneria Italiana</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F7;color:#1C1C1E;max-width:480px;margin:0 auto;min-height:100vh}
+.hdr{background:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:20;border-bottom:0.5px solid #C6C6C8}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr h1{font-size:17px;font-weight:700}
+.hdr-tabs{display:flex}
+.htab{flex:1;padding:9px 0;font-size:14px;font-weight:500;text-align:center;cursor:pointer;color:#8E8E93;border:none;border-bottom:2px solid transparent;background:none}
+.htab.active{color:#185FA5;border-bottom-color:#185FA5}
+.loc-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 4px}
+.loc-btn{padding:11px;border-radius:12px;border:1.5px solid #D1D1D6;background:#fff;font-size:15px;font-weight:600;cursor:pointer;color:#8E8E93;text-align:center}
+.loc-btn.nh.on{background:#E6F1FB;border-color:#185FA5;color:#0C447C}
+.loc-btn.ch.on{background:#EAF3DE;border-color:#3B6D11;color:#27500A}
+.banner{margin:8px 16px;padding:9px 12px;border-radius:10px;font-size:12px;line-height:1.4}
+.banner.nh{background:#E6F1FB;color:#0C447C}.banner.ch{background:#EAF3DE;color:#27500A}
+.cards{padding:0 16px 100px}
+.card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.chd{padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:58px}
+.chd:active{background:#F9F9F9}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.chd-info{flex:1;min-width:0}
+.sname{font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.sfreq{font-size:12px;color:#8E8E93;margin-top:2px}
+.xbadge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:8px;background:#FFECEC;color:#C00}
+.abadge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:8px;background:#EAF3DE;color:#1A7D2E}
+.chev{font-size:16px;color:#C7C7CC;flex-shrink:0;transition:transform .2s}
+.chev.open{transform:rotate(180deg)}
+.cbody{border-top:0.5px solid #F2F2F7}
+.cinfo{padding:8px 16px;font-size:12px;color:#8E8E93;background:#FAFAFA;border-bottom:0.5px solid #F2F2F7}
+.cnote{padding:8px 16px;font-size:12px;color:#7A4800;background:#FFF8EC;border-bottom:0.5px solid #FFEFD1}
+.sec-lbl{padding:10px 16px 4px;font-size:11px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:.06em;background:#FAFAFA;border-bottom:0.5px solid #F2F2F7}
+.item-row{display:flex;align-items:center;padding:9px 16px;border-bottom:0.5px solid #F2F2F7;gap:10px;min-height:48px}
+.item-row.excl{opacity:.5;background:#FAFAFA}
+.item-row.xrow{background:#FFFDF5;min-height:42px;padding:7px 16px}
+.sw{width:44px;height:26px;position:relative;flex-shrink:0;cursor:pointer}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw-t{position:absolute;inset:0;border-radius:13px;background:#D1D1D6;transition:background .2s}
+.sw input:checked~.sw-t{background:#30D158}
+.sw-k{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw input:checked~.sw-k{transform:translateX(18px)}
+.iinfo{flex:1;min-width:0}
+.iname{font-size:14px;font-weight:500;line-height:1.3}
+.iname.off{text-decoration:line-through;color:#8E8E93}
+.iname.sm{font-size:13px;font-weight:400}
+.imeta{font-size:11px;color:#AEAEB2;margin-top:2px;display:flex;align-items:center;gap:6px}
+.sug{font-size:10px;background:#E6F1FB;color:#185FA5;padding:1px 6px;border-radius:6px;cursor:pointer;font-weight:600}
+.stepper{display:flex;align-items:center;flex-shrink:0}
+.stb{width:30px;height:30px;border-radius:50%;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#F2F2F7;color:#1C1C1E;flex-shrink:0}
+.stb:active{background:#E5E5EA}.stb.dec{color:#FF3B30}.stb.inc{color:#30D158}
+.stb.sm{width:26px;height:26px;font-size:16px}
+.stv{width:40px;text-align:center;font-size:15px;font-weight:700}
+.stv.na{color:#C7C7CC;font-weight:400;font-size:13px}.stv.sm{width:34px;font-size:14px}
+.iunit{font-size:11px;color:#AEAEB2;width:30px;text-align:right;flex-shrink:0}
+.cat-div{padding:5px 16px;font-size:10px;font-weight:700;color:#B07700;text-transform:uppercase;letter-spacing:.06em;background:#FFFDF5;border-bottom:0.5px solid #FFF0CC}
+.xbtn{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#FFFBF0;border-top:0.5px solid #FFF0CC;cursor:pointer;font-size:13px;font-weight:600;color:#854F0B}
+.xbtn:active{background:#FFF0CC}
+.actions{padding:12px 16px;display:flex;gap:8px;align-items:center;border-top:0.5px solid #F2F2F7;background:#FAFAFA}
+.btn-rst{padding:9px 10px;border-radius:10px;border:1.5px solid #D1D1D6;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#8E8E93;white-space:nowrap}
+.btn-imp{padding:9px 10px;border-radius:10px;border:1.5px solid #EF9F27;background:#FAEEDA;font-size:12px;font-weight:600;cursor:pointer;color:#633806;white-space:nowrap}
+.btn-cpy{flex:1;padding:11px;border-radius:10px;border:1.5px solid #D1D1D6;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#1C1C1E;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-cpy.ok{border-color:#30D158;color:#1A7D2E;background:#EAF3DE}
+.btn-wa{flex:1;padding:11px;border-radius:10px;border:none;background:#25D366;font-size:13px;font-weight:600;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px}
+/* Modal */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:100}
+.mdl{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:20px 16px 40px}
+.mdl-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mdl-title{font-size:16px;font-weight:700}
+.btn-x{width:32px;height:32px;border-radius:50%;border:none;background:#F2F2F7;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8E8E93}
+.ta{width:100%;height:140px;padding:10px;border:1px solid #D1D1D6;border-radius:12px;font-size:12px;font-family:monospace;resize:none;background:#FAFAFA}
+.ta:focus{outline:none;border-color:#185FA5}
+.parse-info{padding:10px 12px;background:#E6F1FB;border-radius:10px;font-size:13px;color:#0C447C;margin:10px 0}
+.parse-list{margin:10px 0;max-height:220px;overflow-y:auto;border:1px solid #E5E5E5;border-radius:10px}
+.parse-row{display:grid;grid-template-columns:44px 50px 1fr;gap:4px;padding:7px 12px;border-bottom:0.5px solid #F2F2F7;font-size:13px;align-items:center}
+.parse-row:last-child{border-bottom:none}
+.parse-row.new{background:#FFF8EC}
+.btn-analyze{width:100%;padding:13px;border-radius:12px;border:none;background:#185FA5;color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
+.btn-analyze:active{background:#0C447C}
+.btn-analyze:disabled{background:#C7C7CC;cursor:default}
+.btn-confirm{width:100%;padding:13px;border-radius:12px;border:none;background:#30D158;color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-confirm:active{background:#25A244}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hist-row{padding:8px 12px;border-bottom:0.5px solid #F2F2F7;font-size:12px;color:#3A3A3C}
+.hist-row:last-child{border-bottom:none}
+/* Import — image upload */
+.imp-tabs{display:flex;gap:6px;margin-bottom:10px;background:#F2F2F7;border-radius:10px;padding:3px}
+.imp-tab{flex:1;padding:8px 4px;font-size:12px;font-weight:600;border:none;background:none;color:#8E8E93;border-radius:8px;cursor:pointer}
+.imp-tab.on{background:#fff;color:#185FA5;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.drop{border:2px dashed #C7C7CC;border-radius:12px;padding:18px 12px;text-align:center;background:#FAFAFA;transition:all .15s;cursor:pointer}
+.drop.hover{border-color:#185FA5;background:#E6F1FB}
+.drop-ico{font-size:32px;margin-bottom:4px}
+.drop-t{font-size:14px;font-weight:600;color:#1C1C1E}
+.drop-s{font-size:11px;color:#8E8E93;margin-top:3px;line-height:1.4}
+.cam-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.cam-btn{padding:11px;border-radius:10px;border:1.5px solid #D1D1D6;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#1C1C1E;display:flex;align-items:center;justify-content:center;gap:6px}
+.cam-btn:active{background:#F2F2F7}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#000;border:1.5px solid #E5E5E5}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+.thumb-n{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;font-size:10px;padding:8px 4px 3px;text-align:center;font-weight:600}
+.parse-row.edit{display:grid;grid-template-columns:44px 50px 1fr auto;gap:4px;padding:6px 8px;border-bottom:0.5px solid #F2F2F7;align-items:center}
+.parse-row.edit input,.parse-row.edit select{font-size:13px;padding:5px 6px;border:1px solid #D1D1D6;border-radius:6px;background:#fff;width:100%;min-width:0}
+.parse-row.edit .rm{width:24px;height:24px;border-radius:50%;border:none;background:#FFECEC;color:#C00;font-size:14px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
+.match-pill{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;background:#EAF3DE;color:#1A7D2E;font-weight:600;margin-left:4px}
+.match-pill.new{background:#FFF8EC;color:#854F0B}
+.match-pill.man{background:#E6F1FB;color:#185FA5}
+.hist-box{padding:0 16px;background:#FAFAFA;border-bottom:0.5px solid #F2F2F7}
+.hist-list{padding:6px 0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.hist-chip{flex-shrink:0;padding:5px 9px;border-radius:14px;background:#fff;border:1px solid #E5E5E5;font-size:11px;color:#3A3A3C;display:flex;align-items:center;gap:4px;cursor:pointer}
+.hist-chip:active{background:#F2F2F7}
+.hist-chip .n{font-weight:700;color:#185FA5}
+.hist-chip .del{margin-left:2px;color:#C7C7CC;font-size:13px}
+.help-toggle{font-size:11px;color:#185FA5;cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block}
+/* Status */
+.sc{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.sr{display:flex;align-items:center;padding:11px 16px;border-bottom:0.5px solid #F2F2F7;gap:10px}
+.sr:last-child{border-bottom:none}
+.sbg{font-size:11px;font-weight:600;padding:3px 9px;border-radius:8px;flex-shrink:0}
+.ok{background:#EAF3DE;color:#1A7D2E}.warn{background:#FFF8EC;color:#7A4800}
+</style>
+
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-top"><h1>Lasagneria Italiana</h1><span style="font-size:12px;color:#8E8E93">Ordini</span></div>
+  <div class="hdr-tabs">
+    <button class="htab active" onclick="setView('orders',this)">Ordini</button>
+    <button class="htab" onclick="setView('status',this)">Stato Dati</button>
+  </div>
+</div>
+<div id="main"></div>
+<script>
+// Products: {id, name, unit, parNH, parCH, weekly?, cat?}
+// parNH/parCH = 0 → stock check; >0 → standing order
+// cat = string → group header for stock check items
+
+var SUPS=[
+ // ── ALL GREENS ── (13 NH fatture + 11 Chelsea fatture)
+ {id:'ag',name:'All Greens',dot:'#185FA5',
+  contact:'orders@allgreens.co.uk  |  0203 875 5230',
+  phone:'442038755230',
+  freq:'3\u00d7 a settimana',days:'Lun \u00b7 Mer \u00b7 Ven',
+  src:'NH: 13 fatture | Chelsea: 11 fatture',
+  parseType:'allgreens',
+  products:[
+   {id:'milk',    name:'Milk Whole (2ltr)',             unit:'pz', parNH:17,  parCH:16},
+   {id:'aub',     name:'Aubergine',                     unit:'kg', parNH:5,   parCH:4},
+   {id:'onr',     name:'Onion Red',                     unit:'kg', parNH:4,   parCH:2},
+   {id:'chmush',  name:'Chestnut Mushroom',              unit:'kg', parNH:3,   parCH:2},
+   {id:'spin',    name:'Spinach Bunch',                  unit:'kg', parNH:3,   parCH:2},
+   {id:'lem',     name:'Lemon',                         unit:'pz', parNH:3,   parCH:3},
+   {id:'ong',     name:'Onion Golden',                  unit:'kg', parNH:3,   parCH:3},
+   {id:'cel',     name:'Celery Short',                  unit:'pz', parNH:2,   parCH:1},
+   {id:'pump',    name:'Italian Pumpkin Delica',         unit:'kg', parNH:2,   parCH:1},
+   {id:'leaf',    name:'Catering Baby Mix Leaf (500g)',  unit:'pz', parNH:2,   parCH:2},
+   {id:'lime',    name:'Lime',                          unit:'pz', parNH:1,   parCH:1},
+   {id:'tcpv',    name:'Tomato Cherry Plum Vine (5100)', unit:'kg', parNH:1,   parCH:0},
+   {id:'tcv',     name:'Tomato Cherry Vine (5070)',      unit:'kg', parNH:0,   parCH:1},
+   {id:'coug',    name:'Courgette Green',                unit:'kg', parNH:1,   parCH:1},
+   {id:'broc',    name:'Broccoli',                      unit:'kg', parNH:1,   parCH:1,weekly:true},
+   {id:'oj',      name:'Orange Juicing',                unit:'pz', parNH:1,   parCH:1},
+   {id:'carr',    name:'Carrot',                        unit:'kg', parNH:1,   parCH:1},
+   {id:'ched',    name:'Grated Cheddar (1kg)',           unit:'pz', parNH:1,   parCH:3},
+   {id:'tvine',   name:'Tomato Vine',                   unit:'kg', parNH:1,   parCH:1,weekly:true},
+   {id:'rock',    name:'Rocket Pack (125g)',             unit:'pz', parNH:1,   parCH:1},
+   {id:'lett',    name:'Lettuce Iceberg',                unit:'pz', parNH:1,   parCH:2},
+   {id:'bpot',    name:'Baby Potato',                   unit:'kg', parNH:1.5, parCH:1,weekly:true},
+   {id:'bpep',    name:'Bell Pepper Red',                unit:'kg', parNH:1,   parCH:0,weekly:true},
+   {id:'mint',    name:'Mint',                          unit:'pz', parNH:1,   parCH:0,weekly:true},
+   {id:'dcream',  name:'Double Cream (2ltr)',            unit:'pz', parNH:0,   parCH:1,weekly:true},
+   // STOCK CHECK — visti in fattura
+   {id:'avo',     name:'Avocado Hass',                  unit:'pz', parNH:0, parCH:0, cat:'Stock check'},
+   {id:'cuc',     name:'Cucumber',                      unit:'pz', parNH:0, parCH:0, cat:'Stock check'},
+   {id:'basil',   name:'Basil Loose (100g)',             unit:'pz', parNH:0, parCH:0, cat:'Stock check'},
+   {id:'eggs',    name:'Free Range Eggs Tray \u2014 Medium',unit:'pz',parNH:0,parCH:0,cat:'Stock check'},
+   {id:'pump2',   name:'Delica Pumpkin var. 11253 (\u00a35.80)',unit:'kg',parNH:0,parCH:0,cat:'Stock check'},
+   {id:'potato-w',name:'Potato White Washed',            unit:'kg', parNH:0, parCH:0, cat:'Stock check'},
+   {id:'sage',    name:'Sage Loose (100g)',              unit:'pz', parNH:0, parCH:0, cat:'Stock check'},
+  ]},
+ // ── SAINSBURY'S ── (9 NH fatture; Chelsea da Consumo file)
+ {id:'sain',name:"Sainsbury's",dot:'#FF6600',
+  contact:"App Sainsbury's o sito web",
+  freq:'2-3\u00d7 a settimana',days:'Ogni 2 giorni',
+  src:"NH: 9 fatture PDF | Chelsea: Consumo file",
+  parseType:'sainsburys',
+  products:[
+   // STANDING
+   {id:'panc',  name:'Italian Cubetti di Pancetta 200g',    unit:'pz',parNH:10,parCH:5},
+   {id:'tpur',  name:'Tomato Puree DC 200g',                unit:'pz',parNH:6, parCH:3},
+   {id:'pepp',  name:'German Pizza Pepperoni 100g',         unit:'pz',parNH:4, parCH:2},
+   {id:'basi',  name:'Fresh Basil Pot',                     unit:'pz',parNH:3, parCH:2},
+   {id:'dcr',   name:'Double Cream 600ml',                  unit:'pz',parNH:2, parCH:0},
+   {id:'bmce',  name:'Beef Mince 1kg',                      unit:'kg', parNH:3, parCH:4},
+   {id:'eggs2', name:'Free Range Eggs x12',                 unit:'box',parNH:2, parCH:2},
+   {id:'gfls',  name:'GF Lasagne Sheets 250g',              unit:'pz', parNH:2, parCH:2},
+   {id:'avo2',  name:'Avocado x2 (pack)',                   unit:'pz', parNH:0, parCH:2,weekly:true},
+   {id:'guac',  name:'Guacamole 170g',                      unit:'pz', parNH:0, parCH:2,weekly:true},
+   {id:'spf',   name:'Sweet Potato Fries 500g',             unit:'pz', parNH:0, parCH:1,weekly:true},
+   {id:'ssalm', name:'Smoked Salmon 100g',                  unit:'pz', parNH:0, parCH:1,weekly:true},
+   {id:'sun',   name:'Sunflower Oil Pure 5L',               unit:'bt', parNH:0, parCH:1,weekly:true},
+   {id:'ice',   name:'Ice Cubes 2kg',                       unit:'bag',parNH:0, parCH:2,weekly:true},
+   // STOCK CHECK (tutti da fattura reale NH)
+   {id:'bacon', name:'Smoked Back Bacon Rashers 300g',      unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'hsalm', name:'Harbour Salmon Smoked 100g',          unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'salf',  name:'Salmon Fillet 500g (ASC Scottish)',   unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'salfx', name:'Salmon Fillets x4 480g',              unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'chor',  name:'Chorizo Ring Mild 225g',              unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'chick2',name:'Chicken Breast Fillets 2kg',          unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'chick1',name:'Chicken Breast Fillets 1kg',          unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'bris',  name:'Beef Brisket (Approx. 1.7kg)',        unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'bmce2', name:'Beef Mince 5% Fat 500g',              unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'frank', name:'Frankfurter Hot Dogs x10 350g',       unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'ancr',  name:'Anchor Cream Spray 250g',             unit:'pz',parNH:0,parCH:0,cat:'Carne & Pesce'},
+   {id:'ric',   name:'Ricotta Cheese 250g',                 unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'but-s', name:'Butter Salted 250g',                  unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'but-u', name:'Butter Unsalted 250g',                unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'oat',   name:'Long Life Oat Drink 1L',              unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'coco',  name:'Long Life Coconut Drink 1L',          unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'almd',  name:'Long Life Almond Drink 1L',           unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'soya',  name:'Long Life Soya Drink 1L',             unit:'pz',parNH:0,parCH:0,cat:'Latticini & Uova'},
+   {id:'sphb',  name:'Sweet Potato Hash Brown 350g',        unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'bsq',   name:'Butternut Squash Chunks 500g',        unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'chmx',  name:'Chestnut Super Mushrooms 300g',       unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'cht',   name:'Cherry Tomatoes 300g',                unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'mls',   name:'Mixed Leaf Salad 180g',               unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'wrk',   name:'Wild Rocket 60g',                     unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'ilet',  name:'Iceberg Lettuce',                     unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'bpots', name:'Baby Potatoes 1kg',                   unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'pears', name:'Conference Pears x4',                 unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'straw', name:'Strawberries 250g',                   unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'grps',  name:'White Seedless Grapes 500g',          unit:'pz',parNH:0,parCH:0,cat:'Verdure & Frutta'},
+   {id:'gfwb',  name:'GF White Sliced Bread 535g',          unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'gftb',  name:'GF Tiger Bloomer 400g (Genius)',      unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'flour', name:'Plain Flour 1.5kg',                   unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'puff',  name:'Puff Pastry Sheet 320g (Jus-Rol)',    unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'brcr',  name:'Natural Fine Breadcrumbs 230g',       unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'penn',  name:'Penne Pasta 1kg',                     unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'fgno',  name:'Fresh Gnocchi 500g',                  unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'ftag',  name:'Fresh Egg Tagliatelle 500g',          unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'ffus',  name:'Fresh Egg Fusilli 500g',              unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'span',  name:'Scotch Pancakes x6',                  unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'mcfr',  name:'McCain Crispy French Fries 1.4kg',    unit:'pz',parNH:0,parCH:0,cat:'Pasta & Pane'},
+   {id:'btro',  name:'Black Truffle Olive Oil TTD 250ml',   unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'spesto',name:'Sacla Classic Basil Pesto 290g',      unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'osvg',  name:'Olive Spread 500g',                   unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'blisp', name:'Butterlicious Spread 500g',           unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'honey', name:'Squeezy Honey / Clear Honey',         unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'nutl',  name:'Nutella 1kg',                         unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'msyr',  name:'Maple Syrup with Carob 180ml',        unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'rsmr',  name:'Fresh Rosemary',                      unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'sage2', name:'Fresh Packed Sage 20g',               unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'mint2', name:'Fresh Packed Mint 30g',               unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'vsc',   name:'Vegetable Stock Cubes 10x10g',        unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'ksc',   name:'Knorr Stock Cubes Vegetable 8x10g',   unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'oxo',   name:'OXO Vegetable Stock Cubes x24',       unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'saff',  name:'Spanish Saffron 1g (Fudco)',          unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'papk',  name:'Paprika Powder 100g (Fudco Mild)',    unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'oreg',  name:'Oregano 12g',                         unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'bppr',  name:'Ground Black Pepper 100g',            unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'ljce',  name:'Lemon Juice 250ml',                   unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'lime2', name:'Lime Juice 250ml (JS)',               unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'bicarb',name:'Bicarbonate of Soda 180g',            unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'sug',   name:'White Granulated Sugar 500g\/1kg',    unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'walnt', name:'Walnuts Pieces 200g',                 unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'onchut',name:'Onion Chutney 300g (JS)',             unit:'pz',parNH:0,parCH:0,cat:'Pantry'},
+   {id:'gff',   name:'Freee GF Plain White Flour 1kg',      unit:'pz',parNH:0,parCH:0,cat:'GF & Vegan'},
+   {id:'viol1', name:'Violife Grated Vegan Cheese 175g',    unit:'pz',parNH:0,parCH:0,cat:'GF & Vegan'},
+   {id:'viol2', name:'Violife Mozzarella Grated 200g',      unit:'pz',parNH:0,parCH:0,cat:'GF & Vegan'},
+   {id:'hotch', name:'Cadbury Hot Chocolate 500g',          unit:'pz',parNH:0,parCH:0,cat:'Dolci'},
+   {id:'cocp',  name:'Dr. Oetker Dark Cocoa Powder 190g',   unit:'pz',parNH:0,parCH:0,cat:'Dolci'},
+   {id:'amr',   name:'Arden & Amici Amaretti 200g',         unit:'pz',parNH:0,parCH:0,cat:'Dolci'},
+   {id:'oreo',  name:'Oreo Original Cookies 154g',          unit:'pz',parNH:0,parCH:0,cat:'Dolci'},
+   {id:'camp',  name:'Campari Bitter 70cl',                 unit:'pz',parNH:0,parCH:0,cat:'Bevande'},
+   {id:'cc',    name:'Coca-Cola 4x250ml',                   unit:'pz',parNH:0,parCH:0,cat:'Bevande'},
+   {id:'fanta', name:'Fanta Orange Zero 8x330ml',           unit:'pz',parNH:0,parCH:0,cat:'Bevande'},
+   {id:'sprite',name:'Sprite Zero Sugar 8x330ml',           unit:'pz',parNH:0,parCH:0,cat:'Bevande'},
+   {id:'wupl',  name:'Washing Up Liquid 500ml',             unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'tp',    name:'Toilet Tissue Quilted x9 Rolls',      unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'bags',  name:'Tie Top Refuse Sacks x40',            unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'flash', name:'Flash Floor Cleaner 1L',              unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'mrsh',  name:'Mr Sheen Surface Polish 250ml',       unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'mclt',  name:'Spontex Microfibre Cloths x4',        unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'apcl',  name:'All Purpose Cloths x20',              unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'viak',  name:'Viakal Limescale Remover 750ml',      unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'glvs',  name:'Extra Wear Gloves Large',             unit:'pz',parNH:0,parCH:0,cat:'Pulizie'},
+   {id:'plates',name:'Home Paper Plates 50 Pack',           unit:'pz',parNH:0,parCH:0,cat:'Forniture'},
+   {id:'noteb', name:'Home Black Matte A5 Notebook',        unit:'pz',parNH:0,parCH:0,cat:'Forniture'},
+   {id:'markers',name:'Home Permanent Markers Black 5pk',   unit:'pz',parNH:0,parCH:0,cat:'Forniture'},
+  ]},
+ // ── ZAINO FOOD ── (solo standing order; nessuna fattura PDF)
+ {id:'za',name:'Zaino Food',dot:'#085041',
+  contact:'Portale Zaino Food o email ufficio',
+  freq:'2\u00d7 a settimana',days:'Mar \u00b7 Gio',src:null,
+  products:[
+   {id:'moz',name:'Mozzarella Fior di Latte Cubetti 2.5kg',unit:'kg',parNH:5,parCH:9},
+   {id:'bur',name:'Burro Unigrana 1kg',                    unit:'pz',parNH:4,parCH:5},
+   {id:'gra',name:'Gran Moravia Grattugiato 1kg',          unit:'kg',parNH:4,parCH:5},
+   {id:'pass',name:'Passata Pomarella 3kg',                unit:'pz',parNH:6,parCH:12},
+   {id:'lasp',name:'Pasta Lasagne Surg. Gastronom. 10kg',  unit:'kg',parNH:10,parCH:10},
+   {id:'pest',name:'Pesto Genovese Fresco 1kg',            unit:'kg',parNH:1,parCH:2},
+   {id:'ric2',name:'Ricotta 250g',                         unit:'pz',parNH:2,parCH:4},
+   {id:'tir', name:'Tiramisù 110g Frozen (1 cassa = 9pz)', unit:'pz',parNH:9,parCH:9},
+   {id:'olio',name:'Olio Monteargento 5L',                 unit:'bt',parNH:0,parCH:0,weekly:true},
+   {id:'bufala',name:'Mozzarella Bufala DOP 125g',         unit:'pz',parNH:0,parCH:3,weekly:true},
+  ]},
+ // ── BUTCHERS BLOCK ──
+ {id:'bb',name:'Butchers Block',dot:'#993C1D',
+  contact:'info@butchersblock.co.uk',
+  freq:'2-3\u00d7 a settimana',days:'Lun \u00b7 Mer',src:null,
+  products:[
+   {id:'manzo',name:'Manzo Macinato Halal', unit:'kg',parNH:12,parCH:5},
+   {id:'pollo',name:'Petto di Pollo Halal', unit:'kg',parNH:4, parCH:2},
+   {id:'brisket',name:'Beef Brisket',       unit:'kg',parNH:3, parCH:6,weekly:true},
+   {id:'sals',name:'Salsiccia Italiana',    unit:'kg',parNH:0, parCH:2,weekly:true},
+  ]},
+ // ── LA TUA PASTA ──
+ {id:'ltp',name:'La Tua Pasta',dot:'#412402',
+  contact:'orders@latuapasta.co.uk',
+  freq:'2-3\u00d7 a settimana',days:'Lun \u00b7 Mer',src:null,
+  products:[
+   {id:'tag',name:'Tagliatelle',  unit:'kg',parNH:6,parCH:5},
+   {id:'gno',name:'Gnocchi',      unit:'kg',parNH:4,parCH:2},
+   {id:'rvm',name:'Ravioli Manzo',unit:'kg',parNH:2,parCH:2},
+   {id:'rvz',name:'Ravioli Zucca',unit:'kg',parNH:2,parCH:0},
+  ]},
+ // ── DELITALIA ──
+ {id:'del',name:'Delitalia',dot:'#042C53',
+  contact:'Portale Delitalia o email',
+  freq:'2-3\u00d7 a settimana',days:'Lun \u00b7 Mer',src:null,
+  products:[
+   {id:'lver',name:'Lasagna Verde Arcogel 89165',unit:'pz',parNH:2,parCH:2},
+   {id:'pfv', name:'Pesto Nuts Free (Vegan)',    unit:'pz',parNH:2,parCH:1},
+  ]},
+ // ── CASA JULIA (Chelsea only) ──
+ {id:'cj',name:'Casa Julia',dot:'#3C3489',
+  contact:'info@casajulia.co.uk',
+  freq:'1\u00d7 a settimana',days:'Luned\u00ec',src:null,
+  products:[
+   {id:'panna',name:'Acqua Panna Still Glass 500ml',unit:'casse',parNH:0,parCH:2},
+   {id:'dcoke',name:'Diet Coke Glass 330ml',        unit:'cassa',parNH:0,parCH:1},
+   {id:'ccola',name:'Coca Cola Glass 330ml',        unit:'cassa',parNH:0,parCH:1},
+   {id:'peroni',name:'Peroni Glass Beer',           unit:'cassa',parNH:0,parCH:1},
+  ]},
+ // ── GARDABANI ── (9 order form Excel)
+ {id:'ga',name:'Gardabani Wines',dot:'#4A0E00',
+  contact:'orders@gardabani.com  |  +44 20 7101 0669  |  Benjamin Owusu',
+  freq:'2\u00d7 al mese',days:'Met\u00e0 e fine mese',
+  src:'9 order form Excel (Mag 2025\u2013Mag 2026)',
+  products:[
+   {id:'pros', name:'Prosecco DOC Brut, Luna Argenta (6b/cs)',        unit:'case',parNH:3,parCH:0},
+   {id:'nero', name:"Nero d'Avola DOC, Barone Montalto (6b/cs)",      unit:'case',parNH:2,parCH:2},
+   {id:'mont', name:"Montepulciano d'Abruzzo, Giocondi (6b/cs)",      unit:'case',parNH:2,parCH:2},
+   {id:'pg',   name:'Pinot Grigio Venezie DOC, Mandorla (12b/cs)',    unit:'case',parNH:1,parCH:1},
+   {id:'prim', name:'Primitivo IGT, Mandorla (6b/cs)',                unit:'case',parNH:2,parCH:2},
+   {id:'sang', name:'Sangiovese Colli Pesaresi, Guerrieri (6b/cs)',   unit:'case',parNH:2,parCH:2},
+   {id:'sauv', name:'Sauvignon Blanc-Grillo, Montalto (6b/cs)',       unit:'case',parNH:1,parCH:0},
+   {id:'chi',  name:'Chianti Classico DOCG, Vallepicciola (12b/cs)',  unit:'case',parNH:1,parCH:1},
+   {id:'lim',  name:'Limoncello',                                     unit:'bot', parNH:2,parCH:2,weekly:true},
+   // Visti negli order form — mai ordinati
+   {id:'prosr',name:'Prosecco Brut Ros\u00e9 DOC, Luna Argenta (6b/cs)',unit:'case',parNH:0,parCH:0,cat:'Order form'},
+   {id:'merl', name:'Merlot, Barone Montalto (6b/cs)',               unit:'case',parNH:0,parCH:0,cat:'Order form'},
+   {id:'malb', name:'Malbec Fantasia, Lorca (6b/cs)',                unit:'case',parNH:0,parCH:0,cat:'Order form'},
+   {id:'pnoir',name:'Pinot Noir, Vallepicciola (12b/cs)',            unit:'case',parNH:0,parCH:0,cat:'Order form'},
+   {id:'amar', name:'Amarone Valpolicella DOCG, Zironda (6b/cs)',    unit:'case',parNH:0,parCH:0,cat:'Order form'},
+   {id:'bar',  name:'Barolo Riserva DOCG 2017, Casa Ricossa (6b/cs)',unit:'case',parNH:0,parCH:0,cat:'Order form'},
+   {id:'pista',name:'Pistacchello',                                   unit:'bot', parNH:0,parCH:0,cat:'Order form'},
+   {id:'melon',name:'Meloncello',                                     unit:'bot', parNH:0,parCH:0,cat:'Order form'},
+  ]},
+ // ── KIMBO ── (1 order form Excel)
+ {id:'kim',name:'Kimbo Coffee',dot:'#3E1C00',
+  contact:'kimbouk@kimbouk.co.uk  |  Min. \u00a3125  |  Acc. LASAGN',
+  freq:'1\u00d7 al mese',days:'Inizio mese',
+  src:'1 order form Excel (Mag 2026)',
+  products:[
+   {id:'xcr',  name:'Extra Cream Beans (6\u00d71kg)',    unit:'case',parNH:1,parCH:1},
+   {id:'decpod',name:'Decaf Espresso Pods (100\u00d77g)',unit:'box', parNH:1,parCH:1},
+   // Dal catalogo Kimbo
+   {id:'csup',  name:'Crema Suprema Beans (6\u00d71kg)', unit:'case',parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'prem',  name:'Premium Beans (6\u00d71kg)',        unit:'case',parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'prest', name:'Prestige Beans (6\u00d71kg)',       unit:'case',parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'sugw',  name:'Sugar Sticks White (1000pz)',      unit:'pz',  parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'sugb',  name:'Sugar Sticks Brown (1000pz)',      unit:'pz',  parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'cand',  name:'Canderel Sweetener Sticks (1000)', unit:'pz',  parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'cup8',  name:'Cups 8oz Double Wall (500pz)',     unit:'pz',  parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'lid8',  name:'Lids 8oz\/12oz (1000pz)',          unit:'pz',  parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'cafiz', name:'Cafiza Cleaning Powder 900g',      unit:'pz',  parNH:0,parCH:0,cat:'Catalogo'},
+   {id:'monb',  name:'Monbana Hot Choc Sachet (50\u00d725g)',unit:'pz',parNH:0,parCH:0,cat:'Catalogo'},
+  ]},
+ // ── TICCO FOOD (Chelsea) ──
+ {id:'ticco',name:'Ticco Food',dot:'#72243E',
+  contact:'Portale Ticco Food o email',
+  freq:'1\u00d7 ogni 3-4 sett.',days:'Inizio mese',src:null,
+  products:[
+   {id:'choctmp',name:'Chocolate Temptation (2618)',    unit:'box',parNH:0,parCH:1},
+   {id:'panck',  name:'Pancakes (2356)',                unit:'box',parNH:0,parCH:2},
+   {id:'corn',   name:'Cornetti Plain Borbone (3012518)',unit:'box',parNH:0,parCH:1},
+  ]},
+];
+
+// ── State ────────────────────────────────────────────────
+var loc='NH',openSup=null,copiedSup=null,curView='orders',xOpen={};
+var impSup=null,impStep='idle',impMode='img',impText='',impImages=[],impResult=null,impErr=null;
+var histView=null; // {sid, idx} when viewing a past invoice
+var OS={overrides:{NH:{},Chelsea:{}},history:{NH:{},Chelsea:{}}};
+
+function loadOS(){try{var s=localStorage.getItem('ml_v5');if(s)OS=JSON.parse(s);}catch(e){}}
+function saveOS(){try{localStorage.setItem('ml_v5',JSON.stringify(OS));}catch(e){}}
+
+function getPar(sup,prod){return loc==='NH'?prod.parNH:prod.parCH;}
+function getState(sid,pid,par){var ov=(OS.overrides[loc][sid]||{})[pid];return ov!=null?ov:{qty:par,on:par>0};}
+function setState(sid,pid,par,u){
+  if(!OS.overrides[loc][sid])OS.overrides[loc][sid]={};
+  OS.overrides[loc][sid][pid]=Object.assign({},getState(sid,pid,par),u);
+  saveOS();render();
+}
+function resetSup(sid){OS.overrides[loc][sid]={};saveOS();render();}
+
+function getSuggested(sid,pid){
+  var h=(OS.history[loc][sid]||[]);
+  if(h.length<3)return null;
+  var dates=h.map(function(inv){var p=inv.date.split('/');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]).getTime():0;}).filter(function(d){return d>0;});
+  if(dates.length<2)return null;
+  var days=Math.max(1,(Math.max.apply(null,dates)-Math.min.apply(null,dates))/86400000+1);
+  var total=h.reduce(function(s,inv){return s+(inv.items[pid]||0);},0);
+  return Math.round(total/days*7*10)/10;
+}
+
+// ── Invoice parsing ──────────────────────────────────────
+function parseAllGreens(text){
+  var dateM=text.match(/Invoice Date\s+(\d{2}\/\d{2}\/\d{4})/);
+  var invM=text.match(/Invoice\s+(\d{5,})/);
+  var locD=text.match(/Notting Hill/i)?'NH':text.match(/Chelsea/i)?'Chelsea':null;
+  var items=[];
+  text.split('\n').forEach(function(line){
+    var m=line.trim().match(/^([\d.]+)\s+(Kilo|Each)\s+(.+?)\s+([\d.]+)\s+([\d.]+)\s+\d+\s+(\d+)\s*$/);
+    if(m){items.push({qty:parseFloat(m[1]),unit:m[2]==='Kilo'?'kg':'pz',name:m[3].trim(),code:m[6]});}
+  });
+  return{supplier:'All Greens',date:dateM?dateM[1]:null,invNum:invM?invM[1]:null,locD:locD,items:items,src:'regex'};
+}
+
+async function parseWithClaude(text,images,supName){
+  var key=localStorage.getItem('ml_apikey')||'';
+  if(!key){
+    // Fallback all'helper interno se disponibile (artifact context)
+    if(window.claude&&window.claude.complete){
+      return await parseWithClaudeHelper(text,images,supName);
+    }
+    throw new Error('Chiave API mancante. Tocca 🔑 sopra per inserirla.');
+  }
+  var content=[];
+  (images||[]).forEach(function(img){
+    content.push({type:'image',source:{type:'base64',media_type:img.type,data:img.data}});
+  });
+  var prompt='Parse this '+supName+' supplier invoice'+(images&&images.length?' from the image'+(images.length>1?'s (multiple pages of the same invoice)':''):'')+'. Return ONLY valid JSON, no markdown.\n\n'+(text?'Invoice text:\n'+text+'\n\n':'')+'Return JSON: {"supplier":"name","date":"DD/MM/YYYY or null","invNum":"xxxx or null","locD":"NH or Chelsea or null","items":[{"qty":number,"unit":"kg or pz or box or case or bt or bag or casse or cassa or bot","name":"exact product name as written"}]}\n\nRules:\n- qty MUST be a number (not string)\n- if the same product appears twice, sum quantities\n- skip delivery/discount/total rows\n- locD: detect from delivery address (Notting Hill=NH, Chelsea=Chelsea)';
+  content.push({type:'text',text:prompt});
+  var r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+      messages:[{role:'user',content:content}]})
+  });
+  if(!r.ok){
+    var txt=await r.text();
+    if(r.status===401||r.status===403)throw new Error('Chiave API non valida o scaduta. Tocca 🔑 per aggiornarla.');
+    throw new Error('API '+r.status+': '+txt.substring(0,200));
+  }
+  var d=await r.json();
+  var raw=d.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+  var clean=raw.replace(/```json\n?|```/g,'').trim();
+  var jm=clean.match(/\{[\s\S]*\}/);if(jm)clean=jm[0];
+  return Object.assign(JSON.parse(clean),{src:images&&images.length?'vision':'claude'});
+}
+
+async function parseWithClaudeHelper(text,images,supName){
+  // Fallback usando window.claude.complete (solo nel contesto artifact, limite token basso)
+  var content=[];
+  (images||[]).forEach(function(img){
+    content.push({type:'image',source:{type:'base64',media_type:img.type,data:img.data}});
+  });
+  content.push({type:'text',text:'Parse this '+supName+' invoice. Return ONLY valid JSON:\n'+(text||'')+'\n{"supplier":"name","date":"DD/MM/YYYY or null","invNum":"xxxx or null","locD":"NH or Chelsea or null","items":[{"qty":number,"unit":"kg/pz/box/case","name":"product name"}]}'});
+  var raw=await window.claude.complete({messages:[{role:'user',content:content}]});
+  var clean=String(raw).replace(/```json\n?|```/g,'').trim();
+  var jm=clean.match(/\{[\s\S]*\}/);if(jm)clean=jm[0];
+  return Object.assign(JSON.parse(clean),{src:'helper'});
+}
+
+function setApiKey(){
+  var cur=localStorage.getItem('ml_apikey')||'';
+  var k=prompt('Incolla la tua chiave API Anthropic (inizia con sk-ant-...).\nViene salvata SOLO nel tuo browser (localStorage). Lascia vuoto per rimuovere.',cur);
+  if(k===null)return;
+  k=k.trim();
+  if(!k){localStorage.removeItem('ml_apikey');alert('Chiave rimossa.');}
+  else if(!/^sk-ant-/.test(k)){alert('Formato chiave non valido (deve iniziare con sk-ant-).');return;}
+  else{localStorage.setItem('ml_apikey',k);alert('Chiave salvata.');}
+  render();
+}
+
+// Read a File/Blob → {type, data: base64 (no prefix), preview: dataURL, name}
+function readImage(file){
+  return new Promise(function(res,rej){
+    var rd=new FileReader();
+    rd.onload=function(){
+      var url=rd.result;
+      var b64=url.split(',')[1];
+      var mt=(url.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      // downscale if very large to keep payload small
+      var img=new Image();
+      img.onload=function(){
+        var max=1600,w=img.width,h=img.height;
+        if(Math.max(w,h)>max){var s=max/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);
+          var c=document.createElement('canvas');c.width=w;c.height=h;
+          c.getContext('2d').drawImage(img,0,0,w,h);
+          var dataURL=c.toDataURL('image/jpeg',0.85);
+          res({type:'image/jpeg',data:dataURL.split(',')[1],preview:dataURL,name:file.name});
+        }else{res({type:mt,data:b64,preview:url,name:file.name});}
+      };
+      img.onerror=function(){res({type:mt,data:b64,preview:url,name:file.name});};
+      img.src=url;
+    };
+    rd.onerror=rej;rd.readAsDataURL(file);
+  });
+}
+
+async function addImages(files){
+  var arr=Array.from(files||[]).filter(function(f){return f&&f.type&&f.type.indexOf('image/')===0;});
+  for(var i=0;i<arr.length;i++){var im=await readImage(arr[i]);impImages.push(im);render();}
+}
+function removeImage(i){impImages.splice(i,1);render();}
+
+function matchProduct(sup,item){
+  // Try to match by prodCode (All Greens)
+  var codeMap={1257:'aub',15018:'coug',33076:'spin',37001:'tvine',5057:'chmush',33081:'cel',
+    15078:'ched',23003:'milk',5065:'carr',4059:'broc',26031:'onr',26038:'ong',22004:'lem',
+    4075:'leaf',18006:'lett',31021:'rock',23080:'mint',5100:'tcpv',5070:'tcv',1674:'pump',
+    22008:'lime',26006:'oj',28088:'bpot',31020:'bpep',5001:'dcream',28104:'potato-w',
+    33021:'sage',4062:'basil',1110:'avo',22013:'cuc',11011:'eggs',11253:'pump2'};
+  if(item.code&&codeMap[parseInt(item.code)]){
+    var pid=codeMap[parseInt(item.code)];
+    var found=sup.products.find(function(p){return p.id===pid;});
+    if(found)return found;
+  }
+  // Fuzzy name match: token overlap weighted by length + number/unit match
+  function norm(s){return (s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+  var stop={'the':1,'and':1,'with':1,'for':1,'pack':1,'each':1,'kilo':1,'fresh':1,'di':1,'da':1,'a':1,'la':1,'il':1,'lo':1,'gr':1,'kg':1,'ml':1,'cl':1,'pz':1};
+  var nl=norm(item.name);
+  var nTok=nl.split(' ').filter(function(w){return w.length>2&&!stop[w];});
+  var nNums=nl.match(/\d+/g)||[];
+  var best=null,bestScore=0;
+  sup.products.forEach(function(p){
+    var pn=norm(p.name);
+    var pTok=pn.split(' ').filter(function(w){return w.length>2&&!stop[w];});
+    var score=0;
+    nTok.forEach(function(w){if(pTok.indexOf(w)>=0)score+=Math.min(w.length,8);});
+    // bonus if a number (e.g. weight/pack size) matches
+    var pNums=pn.match(/\d+/g)||[];
+    nNums.forEach(function(n){if(pNums.indexOf(n)>=0)score+=3;});
+    if(score>bestScore){bestScore=score;best=p;}
+  });
+  return bestScore>=4?best:null;
+}
+
+// ── Render helpers ───────────────────────────────────────
+function stp(sid,pid,par,unit,dir){
+  var st=getState(sid,pid,par);
+  var s=unit==='kg'?0.5:1;
+  var q=Math.max(0,Math.round((st.qty+dir*s)*10)/10);
+  setState(sid,pid,par,{qty:q,on:q>0});
+}
+function acceptSug(sid,pid,par,sugVal){setState(sid,pid,par,{qty:sugVal,on:sugVal>0});}
+
+function rItem(sup,prod,isX){
+  var par=getPar(sup,prod);
+  var st=getState(sup.id,prod.id,par);
+  var on=st.on!==false,qty=st.qty;
+  var sm=isX?' sm':'';
+  var h='<div class="item-row'+(on?'':' excl')+(isX?' xrow':'')+'">';
+  h+='<label class="sw"><input type="checkbox"'+(on?' checked':'')+' onchange="setState(\''+sup.id+'\',\''+prod.id+'\','+par+',{on:this.checked,qty:this.checked?'+(par>0?par:1)+':0});"><span class="sw-t"></span><span class="sw-k"></span></label>';
+  h+='<div class="iinfo"><div class="iname'+(on?'':' off')+(isX?' sm':'')+'">'+prod.name+'</div>';
+  if(!isX){
+    var sug=getSuggested(sup.id,prod.id);
+    h+='<div class="imeta">par: '+par;
+    if(sug!==null&&Math.abs(sug-par)>0.4)h+=' <span class="sug" onclick="acceptSug(\''+sup.id+'\',\''+prod.id+'\','+par+','+sug+')">\ud83d\udca1 suggerito: '+sug+'</span>';
+    h+='</div>';
+  }
+  h+='</div>';
+  if(on){
+    h+='<div class="stepper"><button class="stb dec'+sm+'" onclick="stp(\''+sup.id+'\',\''+prod.id+'\','+par+',\''+prod.unit+'\',-1)">\u2212</button>';
+    h+='<span class="stv'+sm+'">'+qty+'</span>';
+    h+='<button class="stb inc'+sm+'" onclick="stp(\''+sup.id+'\',\''+prod.id+'\','+par+',\''+prod.unit+'\',1)">+</button></div>';
+  }else h+='<span class="stv na">\u2014</span>';
+  return h+'<span class="iunit">'+prod.unit+'</span></div>';
+}
+
+function genMsg(sup){
+  var lines=[];
+  sup.products.forEach(function(prod){
+    var par=getPar(sup,prod);
+    var st=getState(sup.id,prod.id,par);
+    if(!st.on||st.qty<=0)return;
+    lines.push(' '+String(st.qty).padStart(2)+' '+prod.unit.padEnd(6)+'  '+prod.name);
+  });
+  return'Ciao! Ordine '+sup.name+' \u2014 '+loc+':\n\n'+lines.join('\n')+'\n\nGrazie!';
+}
+
+function cpyMsg(sid){
+  var sup=SUPS.find(function(s){return s.id===sid;});if(!sup)return;
+  var msg=genMsg(sup);
+  function ok(){copiedSup=sid;render();setTimeout(function(){copiedSup=null;render();},2500);}
+  if(navigator.clipboard)navigator.clipboard.writeText(msg).then(ok).catch(ok);
+  else{var t=document.createElement('textarea');t.value=msg;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.focus();t.select();document.execCommand('copy');document.body.removeChild(t);ok();}
+}
+function waMsg(sid){
+  var sup=SUPS.find(function(s){return s.id===sid;});if(!sup)return;
+  var msg=genMsg(sup);
+  // Pre-copia negli appunti (fallback se l'utente perde il testo nel passaggio)
+  try{if(navigator.clipboard)navigator.clipboard.writeText(msg);}catch(e){}
+  // Apri WhatsApp SENZA destinatario preimpostato → l'utente sceglie il contatto
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ── Import flow ──────────────────────────────────────────
+function openImport(sid){impSup=sid;impStep='idle';impMode='img';impText='';impImages=[];impResult=null;impErr=null;render();}
+function closeImport(){impSup=null;impImages=[];impText='';impResult=null;render();}
+function setImpMode(m){impMode=m;render();}
+
+async function analyzeInvoice(){
+  var hasImg=impImages.length>0,hasTxt=impText.trim().length>0;
+  if(!hasImg&&!hasTxt)return;
+  impStep='parsing';impErr=null;render();
+  try{
+    var sup=SUPS.find(function(s){return s.id===impSup;});
+    var result;
+    // Pure text + All Greens → fast regex path
+    if(!hasImg&&(sup.parseType==='allgreens'||/All Greens|allgreens|New Covent/i.test(impText))){
+      result=parseAllGreens(impText);
+    }else{
+      result=await parseWithClaude(hasTxt?impText:'',hasImg?impImages:null,sup.name);
+    }
+    // Normalize: coerce qty numbers, drop empties
+    result.items=(result.items||[]).filter(function(it){return it&&it.name;}).map(function(it){
+      it.qty=parseFloat(it.qty)||0;
+      it.unit=(it.unit||'pz').toLowerCase();
+      return it;
+    }).filter(function(it){return it.qty>0;});
+    // Match each item
+    result.items.forEach(function(it){it.matched=matchProduct(sup,it);it.manual=false;});
+    impResult=result;impStep='done';
+  }catch(e){impStep='error';impErr=e.message||String(e);}
+  render();
+}
+
+// Edit a parsed item field
+function editItem(i,k,v){
+  if(!impResult)return;
+  var it=impResult.items[i];if(!it)return;
+  if(k==='qty')it.qty=parseFloat(v)||0;
+  else if(k==='unit')it.unit=v;
+  else if(k==='name')it.name=v;
+  else if(k==='match'){
+    if(v==='__new__'){it.matched=null;it.manual=false;}
+    else{var sup=SUPS.find(function(s){return s.id===impSup;});
+      it.matched=sup.products.find(function(p){return p.id===v;})||null;it.manual=true;}
+  }
+  render();
+}
+function removeParsedItem(i){if(!impResult)return;impResult.items.splice(i,1);render();}
+
+function confirmImport(){
+  if(!impResult||!impResult.items)return;
+  var sup=SUPS.find(function(s){return s.id===impSup;});
+  var l=impResult.locD||loc;
+  if(!OS.history[l][sup.id])OS.history[l][sup.id]=[];
+  var items={};
+  impResult.items.forEach(function(it){
+    if(it.qty<=0)return;
+    var pid;
+    if(it.matched){pid=it.matched.id;}
+    else{
+      // new product → stable id from name
+      pid=it.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').substring(0,28);
+      var exists=sup.products.find(function(p){return p.id===pid;});
+      if(!exists){sup.products.push({id:pid,name:it.name,unit:it.unit||'pz',parNH:0,parCH:0,cat:'Da fattura'});}
+    }
+    items[pid]=(items[pid]||0)+it.qty;
+  });
+  OS.history[l][sup.id].push({
+    date:impResult.date||new Date().toLocaleDateString('it-IT'),
+    invNum:impResult.invNum||null,
+    items:items
+  });
+  var h=OS.history[l][sup.id];
+  if(h.length>30)OS.history[l][sup.id]=h.slice(-30);
+  saveOS();closeImport();
+}
+
+function deleteHistory(sid,idx){
+  if(!confirm('Eliminare questa fattura dallo storico?'))return;
+  var arr=OS.history[loc][sid]||[];arr.splice(idx,1);saveOS();render();
+}
+function viewHistory(sid,idx){histView={sid:sid,idx:idx};render();}
+function closeHistView(){histView=null;render();}
+
+// ── Main render ──────────────────────────────────────────
+function setView(v,b){curView=v;document.querySelectorAll('.htab').forEach(function(x){x.classList.remove('active');});b.classList.add('active');render();}
+function setLoc(l){loc=l;openSup=null;copiedSup=null;xOpen={};render();}
+function togSup(id){openSup=openSup===id?null:id;render();}
+function togX(sid){xOpen[sid]=!xOpen[sid];render();}
+
+function renderOrders(){
+  var h='<div class="loc-row">';
+  ['NH','Chelsea'].forEach(function(l){h+='<button class="loc-btn '+(l==='NH'?'nh':'ch')+(loc===l?' on':'')+'" onclick="setLoc(\''+l+'\')">'+(l==='NH'?'Notting Hill':'Chelsea')+'</button>';});
+  h+='</div><div class="banner '+(loc==='NH'?'nh':'ch')+'">\u2139 '+(loc==='NH'?'NH aperta Apr 2026 \u2014 in calibrazione. Quantit\u00e0 suggerite (\ud83d\udca1) aggiornate ad ogni fattura importata.':'Chelsea \u2014 dati da 11 fatture Apr\u2013Mag 2026.')+'</div>';
+  h+='<div class="cards">';
+  SUPS.forEach(function(sup){
+    // Only show if supplier has any product for this location
+    var hasAny=sup.products.some(function(p){return getPar(sup,p)>0||p.cat||p.weekly;});
+    if(!hasAny&&sup.id!=='cj'&&loc==='NH')return; // skip Chelsea-only
+    var isOpen=openSup===sup.id;
+    var excl=sup.products.filter(function(p){var par=getPar(sup,p);var st=(OS.overrides[loc][sup.id]||{})[p.id];return st&&st.on===false&&par>0;}).length;
+    var added=sup.products.filter(function(p){var par=getPar(sup,p);if(par>0)return false;var st=(OS.overrides[loc][sup.id]||{})[p.id];return st&&st.on&&st.qty>0;}).length;
+    var hcount=(OS.history[loc][sup.id]||[]).length;
+    h+='<div class="card"><div class="chd" onclick="togSup(\''+sup.id+'\')">';
+    h+='<div class="dot" style="background:'+(sup.dot||'#888')+'"></div>';
+    h+='<div class="chd-info"><div class="sname">'+sup.name;
+    if(excl>0)h+='<span class="xbadge">'+excl+' esclusi</span>';
+    if(added>0)h+='<span class="abadge">+'+added+'</span>';
+    if(hcount>0)h+='<span style="font-size:11px;color:#8E8E93;font-weight:400">'+hcount+' fatture</span>';
+    h+='</div><div class="sfreq">'+sup.freq+' \u00b7 '+sup.days+'</div></div>';
+    h+='<div class="chev'+(isOpen?' open':'')+'">&#8964;</div></div>';
+    if(isOpen){
+      h+='<div class="cbody"><div class="cinfo">'+sup.contact+'</div>';
+      if(sup.src)h+='<div style="padding:5px 16px;font-size:11px;color:#8E8E93;background:#FAFAFA;border-bottom:0.5px solid #F2F2F7">\ud83d\udcc4 '+sup.src+'</div>';
+      var supHist=OS.history[loc][sup.id]||[];
+      if(supHist.length){
+        h+='<div class="hist-box"><div style="padding:6px 0 2px;font-size:10px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:.05em">Storico fatture importate ('+supHist.length+')</div><div class="hist-list">';
+        supHist.slice().reverse().forEach(function(inv,ri){
+          var idx=supHist.length-1-ri;
+          var n=Object.keys(inv.items||{}).length;
+          h+='<div class="hist-chip" onclick="viewHistory(\''+sup.id+'\','+idx+')">📄 '+inv.date+' <span class="n">'+n+'</span></div>';
+        });
+        h+='</div></div>';
+      }
+      var standProds=sup.products.filter(function(p){return getPar(sup,p)>0&&!p.cat;});
+      var weeklyProds=sup.products.filter(function(p){return p.weekly&&!p.cat;});
+      var xProds=sup.products.filter(function(p){return p.cat||((getPar(sup,p)===0)&&!p.weekly);});
+      if(standProds.length){h+='<div class="sec-lbl">Standing order</div>';standProds.forEach(function(p){h+=rItem(sup,p,false);});}
+      if(weeklyProds.length){h+='<div class="sec-lbl">+ 1\u00d7 a settimana</div>';weeklyProds.forEach(function(p){h+=rItem(sup,p,false);});}
+      if(xProds.length){
+        var isX=xOpen[sup.id];
+        var xAdded=xProds.filter(function(p){var st=(OS.overrides[loc][sup.id]||{})[p.id];return st&&st.on&&st.qty>0;}).length;
+        h+='<div class="xbtn" onclick="togX(\''+sup.id+'\')">';
+        h+='<span>\ud83d\udce6 Aggiungi se serve'+(xAdded>0?' \u2014 '+xAdded+' aggiunti':'')+'</span><span>'+(isX?'\u25b2':'\u25bc')+'</span></div>';
+        if(isX){
+          var curCat=null;
+          xProds.forEach(function(p){
+            if(p.cat!==curCat){h+='<div class="cat-div">'+(p.cat||'Altri')+'</div>';curCat=p.cat;}
+            h+=rItem(sup,p,true);
+          });
+        }
+      }
+      var isCopied=copiedSup===sup.id;
+      h+='<div class="actions">';
+      h+='<button class="btn-rst" onclick="resetSup(\''+sup.id+'\')">Reset</button>';
+      h+='<button class="btn-imp" onclick="openImport(\''+sup.id+'\')">\ud83d\udce5 Importa</button>';
+      h+='<button class="btn-cpy'+(isCopied?' ok':'')+'" onclick="cpyMsg(\''+sup.id+'\')">'+(isCopied?'\u2713 Copiato':'\ud83d\udccb Copia')+'</button>';
+      h+='<button class="btn-wa" onclick="waMsg(\''+sup.id+'\')">\ud83d\udcac WA</button>';
+      h+='</div></div>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+
+  // Import modal
+  if(impSup){
+    var sup=SUPS.find(function(s){return s.id===impSup;});
+    h+='<div class="ovl" onclick="if(event.target===this)closeImport()"><div class="mdl">';
+    h+='<div class="mdl-hd"><span class="mdl-title">Importa fattura — '+sup.name+'</span>';
+    h+='<div style="display:flex;gap:6px;align-items:center">';
+    var hasKey=!!localStorage.getItem('ml_apikey');
+    h+='<button title="Chiave API" onclick="setApiKey()" style="border:1px solid '+(hasKey?'#30D158':'#EF9F27')+';background:'+(hasKey?'#EAF3DE':'#FAEEDA')+';color:'+(hasKey?'#1A7D2E':'#854F0B')+';font-size:11px;font-weight:600;padding:5px 9px;border-radius:14px;cursor:pointer">🔑 '+(hasKey?'API OK':'Imposta API')+'</button>';
+    h+='<button class="btn-x" onclick="closeImport()">×</button>';
+    h+='</div></div>';
+
+    if(impStep==='idle'||impStep==='error'){
+      // Mode tabs
+      h+='<div class="imp-tabs">';
+      h+='<button class="imp-tab'+(impMode==='img'?' on':'')+'" onclick="setImpMode(\'img\')">📷 Foto/Screenshot</button>';
+      h+='<button class="imp-tab'+(impMode==='txt'?' on':'')+'" onclick="setImpMode(\'txt\')">📋 Testo</button>';
+      h+='</div>';
+
+      if(impMode==='img'){
+        h+='<div class="drop" id="imp-drop" ondragover="event.preventDefault();this.classList.add(\'hover\')" ondragleave="this.classList.remove(\'hover\')" ondrop="event.preventDefault();this.classList.remove(\'hover\');addImages(event.dataTransfer.files)" onclick="document.getElementById(\'imp-file\').click()">';
+        h+='<div class="drop-ico">📸</div>';
+        h+='<div class="drop-t">Tocca per scegliere immagini</div>';
+        h+='<div class="drop-s">Screenshot, foto fattura, oppure trascina qui<br>Più immagini = pagine della stessa fattura</div>';
+        h+='</div>';
+        h+='<input type="file" id="imp-file" accept="image/*" multiple style="display:none" onchange="addImages(this.files);this.value=\'\'">';
+        h+='<input type="file" id="imp-cam" accept="image/*" capture="environment" style="display:none" onchange="addImages(this.files);this.value=\'\'">';
+        h+='<div class="cam-row">';
+        h+='<button class="cam-btn" onclick="document.getElementById(\'imp-cam\').click()">📷 Scatta foto</button>';
+        h+='<button class="cam-btn" onclick="document.getElementById(\'imp-file\').click()">🖼️ Galleria</button>';
+        h+='</div>';
+        h+='<div style="font-size:11px;color:#8E8E93;margin-top:6px;text-align:center">Suggerimento: incolla con <strong>Cmd/Ctrl+V</strong> uno screenshot dagli appunti</div>';
+        if(impImages.length){
+          h+='<div class="thumbs">';
+          impImages.forEach(function(im,i){
+            h+='<div class="thumb"><img src="'+im.preview+'" alt=""><button class="thumb-x" onclick="removeImage('+i+')">×</button><div class="thumb-n">Pag. '+(i+1)+'</div></div>';
+          });
+          h+='</div>';
+        }
+      }else{
+        h+='<p style="font-size:12px;color:#8E8E93;margin-bottom:8px">Apri il PDF, seleziona tutto (Ctrl+A), copia e incolla qui.</p>';
+        h+='<textarea class="ta" id="imp-ta" placeholder="Incolla il testo della fattura..." oninput="impText=this.value">'+impText+'</textarea>';
+      }
+
+      if(impStep==='error'){
+        h+='<p style="font-size:12px;color:#C00;margin-top:8px;padding:8px 10px;background:#FFECEC;border-radius:8px;line-height:1.4">⚠️ Errore analisi.'+(impErr?'<br><span style="font-family:monospace;font-size:10px">'+impErr.replace(/[<>]/g,'')+'</span>':'')+'</p>';
+      }
+
+      var canGo=(impMode==='img'?impImages.length>0:impText.trim().length>0);
+      h+='<button class="btn-analyze" onclick="analyzeInvoice()" '+(canGo?'':'disabled')+'>'+(impMode==='img'?'🔍 Analizza '+impImages.length+' immagine'+(impImages.length===1?'':'i'):'Analizza fattura')+'</button>';
+    }else if(impStep==='parsing'){
+      h+='<div style="text-align:center;padding:40px 0;color:#185FA5;font-size:14px"><div style="font-size:32px;margin-bottom:8px">🔍</div><span class="spin"></span>Analisi in corso...<div style="font-size:11px;color:#8E8E93;margin-top:8px">'+(impImages.length?'Lettura di '+impImages.length+' immagine'+(impImages.length===1?'':'i')+' con AI':'Estrazione articoli')+'</div></div>';
+    }else if(impStep==='done'&&impResult){
+      var r=impResult;
+      h+='<div class="parse-info">✅ <strong>'+(r.supplier||sup.name)+'</strong>';
+      if(r.date)h+=' · '+r.date;
+      if(r.invNum)h+=' · #'+r.invNum;
+      if(r.locD)h+=' · '+r.locD;
+      h+=' · '+r.items.length+' articoli · '+r.src+'</div>';
+      h+='<div style="font-size:11px;color:#8E8E93;margin:8px 2px 4px">Verifica e modifica se serve — tocca un campo per editare:</div>';
+      h+='<div class="parse-list">';
+      r.items.forEach(function(it,i){
+        var matchVal=it.matched?it.matched.id:'__new__';
+        var pillClass=it.matched?(it.manual?'man':''):'new';
+        var pillText=it.matched?(it.manual?'manuale':'auto'):'NUOVO';
+        h+='<div class="parse-row edit">';
+        h+='<input type="number" step="0.1" min="0" value="'+it.qty+'" onchange="editItem('+i+',\'qty\',this.value)">';
+        h+='<select onchange="editItem('+i+',\'unit\',this.value)">';
+        ['kg','pz','box','case','bt','bag','casse','cassa','bot'].forEach(function(u){h+='<option value="'+u+'"'+(it.unit===u?' selected':'')+'>'+u+'</option>';});
+        h+='</select>';
+        h+='<div style="min-width:0"><div style="font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.name.replace(/[<>]/g,'')+' <span class="match-pill '+pillClass+'">'+pillText+'</span></div>';
+        h+='<select style="margin-top:3px;font-size:11px;padding:3px 4px;border:1px solid #E5E5E5;border-radius:4px;width:100%;color:#3A3A3C" onchange="editItem('+i+',\'match\',this.value)">';
+        h+='<option value="__new__"'+(!it.matched?' selected':'')+'>↳ Nuovo prodotto</option>';
+        sup.products.forEach(function(p){h+='<option value="'+p.id+'"'+(it.matched&&it.matched.id===p.id?' selected':'')+'>↳ '+p.name+'</option>';});
+        h+='</select></div>';
+        h+='<button class="rm" onclick="removeParsedItem('+i+')">×</button>';
+        h+='</div>';
+      });
+      h+='</div>';
+      var newC=r.items.filter(function(it){return!it.matched;}).length;
+      if(newC>0)h+='<p style="font-size:12px;color:#854F0B;margin-top:8px;padding:6px 10px;background:#FFF8EC;border-radius:8px">🆕 '+newC+' articoli verranno aggiunti come "Da fattura".</p>';
+      h+='<button class="btn-confirm" onclick="confirmImport()">✓ Conferma e aggiorna medie</button>';
+      h+='<button class="btn-analyze" style="background:#8E8E93;margin-top:6px" onclick="impStep=\'idle\';render()">← Indietro</button>';
+    }
+    h+='</div></div>';
+  }
+
+  // History viewer
+  if(histView){
+    var sup2=SUPS.find(function(s){return s.id===histView.sid;});
+    var inv=(OS.history[loc][histView.sid]||[])[histView.idx];
+    if(sup2&&inv){
+      h+='<div class="ovl" onclick="if(event.target===this)closeHistView()"><div class="mdl">';
+      h+='<div class="mdl-hd"><span class="mdl-title">📄 '+sup2.name+' · '+inv.date+(inv.invNum?' · #'+inv.invNum:'')+'</span>';
+      h+='<button class="btn-x" onclick="closeHistView()">×</button></div>';
+      h+='<div class="parse-list">';
+      Object.keys(inv.items).forEach(function(pid){
+        var p=sup2.products.find(function(x){return x.id===pid;});
+        var name=p?p.name:pid;
+        var unit=p?p.unit:'';
+        h+='<div class="parse-row"><span style="font-weight:700">'+inv.items[pid]+'</span><span style="color:#8E8E93">'+unit+'</span><span>'+name+'</span></div>';
+      });
+      h+='</div>';
+      h+='<button class="btn-analyze" style="background:#C00;margin-top:10px" onclick="closeHistView();deleteHistory(\''+histView.sid+'\','+histView.idx+')">🗑 Elimina fattura</button>';
+      h+='</div></div>';
+    }
+  }
+
+  return h;
+}
+
+function renderStatus(){
+  var nh_ok=SUPS.filter(function(s){return s.src;}).length;
+  var h='<div style="padding:12px 16px 80px">';
+  h+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">Stato dati \u2014 tutti i fornitori</div>';
+  h+='<div class="sc">';
+  SUPS.forEach(function(sup){
+    var hnh=(OS.history.NH[sup.id]||[]).length;
+    var hch=(OS.history.Chelsea[sup.id]||[]).length;
+    var hasSrc=!!sup.src;
+    var badge=hasSrc?'ok':'warn';
+    var sub=hasSrc?sup.src:'Nessuna fattura \u2014 solo standing order da Consumo file';
+    if(hnh>0||hch>0)sub+=' | Importate: NH '+hnh+', Chelsea '+hch;
+    h+='<div class="sr"><span style="font-size:16px;width:22px;text-align:center;flex-shrink:0">'+(hasSrc?'\u2705':'\u26a0\ufe0f')+'</span>';
+    h+='<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">'+sup.name+'</div><div style="font-size:12px;color:#8E8E93;margin-top:2px">'+sub+'</div></div>';
+    h+='<span class="sbg '+badge+'">'+(badge==='ok'?'OK':'Parziale')+'</span></div>';
+  });
+  h+='</div>';
+  h+='<div style="font-size:13px;font-weight:700;color:#C00;margin:16px 0 8px">Mancanti</div>';
+  h+='<div class="sc">';
+  [{n:'Fine Med Food',s:'Ordini WhatsApp'},{n:'LPB Bakery',s:'Portale online'},{n:'Marco Alimentari',s:'Portale online'},{n:'Annessa Food',s:'Account on hold'}].forEach(function(s){
+    h+='<div class="sr"><span style="font-size:16px;width:22px;text-align:center">\u274c</span><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">'+s.n+'</div><div style="font-size:12px;color:#8E8E93">'+s.s+'</div></div></div>';
+  });
+  h+='</div>';
+  h+='<div style="background:#E6F1FB;border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.7;color:#0C447C">';
+  h+='<strong>Come importare una fattura (v5):</strong><br>';
+  h+='<strong>📷 Screenshot / Foto</strong> — apri qualsiasi fornitore → 📥 Importa → 📸 → scegli o scatta. Anche più pagine.<br>';
+  h+='<strong>📋 Testo</strong> — PDF → Ctrl+A → Ctrl+C → incolla nella tab "Testo".<br>';
+  h+='<strong>🖼️ Incolla</strong> — con modal aperto, Cmd/Ctrl+V dagli appunti.<br><br>';
+  h+='<strong>⚠️ Chiave API necessaria per Foto/Vision:</strong> apri il modal Importa → tocca 🔑 → incolla chiave Anthropic (sk-ant-…). Salvata solo in locale.<br>';
+  h+='All Greens (testo): regex istantanea, non richiede chiave.';
+  h+='</div>';
+  h+='</div>';
+  return h;
+}
+
+function render(){document.getElementById('main').innerHTML=curView==='orders'?renderOrders():renderStatus();}
+
+// Global paste handler: while import modal is open, accept image from clipboard
+window.addEventListener('paste',function(e){
+  if(!impSup||impStep==='parsing'||impStep==='done')return;
+  if(!e.clipboardData||!e.clipboardData.items)return;
+  var files=[];
+  for(var i=0;i<e.clipboardData.items.length;i++){
+    var it=e.clipboardData.items[i];
+    if(it.kind==='file'&&it.type.indexOf('image/')===0){var f=it.getAsFile();if(f)files.push(f);}
+  }
+  if(files.length){e.preventDefault();impMode='img';addImages(files);}
+});
+
+loadOS();render();
+</script>
+
+
+</body></html>
