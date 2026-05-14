@@ -1,0 +1,21 @@
+{
+  "name": "Ordini Lasagneria",
+  "short_name": "Ordini ML",
+  "description": "Gestione ordini Lasagneria Italiana — Notting Hill & Chelsea",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#185FA5",
+  "theme_color": "#185FA5",
+  "lang": "it",
+  "categories": ["business", "productivity", "food"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

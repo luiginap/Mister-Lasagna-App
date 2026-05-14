@@ -1,0 +1,24 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#185FA5"></rect>
+  <g transform="translate(120 138)">
+    
+    <path d="M0,30 Q10,0 30,15 Q60,30 90,5 Q120,30 150,5 Q180,30 210,5 Q240,30 272,15 L272,55 L0,55 Z" fill="#F5D998"></path>
+    
+    <rect x="0" y="55" width="272" height="22" fill="#D14B3D"></rect>
+    
+    <rect x="0" y="77" width="272" height="32" fill="#F5D998"></rect>
+    
+    <rect x="0" y="109" width="272" height="18" fill="#FFFFFF"></rect>
+    
+    <rect x="0" y="127" width="272" height="32" fill="#F5D998"></rect>
+    
+    <rect x="0" y="159" width="272" height="18" fill="#7CB342"></rect>
+    
+    <rect x="0" y="177" width="272" height="32" fill="#F5D998"></rect>
+    
+    <rect x="0" y="209" width="272" height="22" fill="#D14B3D"></rect>
+    
+    <path d="M0,231 L272,231 L272,256 Q240,271 210,251 Q180,276 150,251 Q120,276 90,251 Q60,276 30,251 Q10,266 0,256 Z" fill="#F5D998"></path>
+  </g>
+  <text x="256" y="460" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="2">ORDINI</text>
+</svg>
