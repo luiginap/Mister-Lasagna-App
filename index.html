@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mister Lasagna">
+<meta name="theme-color" content="#A01A1C">
+<title>Mister Lasagna — Stock Check</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F2EF;color:#1C1C1E;max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:160px}
+html[data-zoom="s"] body{zoom:0.88}
+html[data-zoom="m"] body{zoom:1}
+html[data-zoom="l"] body{zoom:1.15}
+
+/* ─── HEADER ─── */
+.hdr{background:#fff;padding:8px 16px 0;position:sticky;top:0;z-index:30;border-bottom:0.5px solid #E5E0DB}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.hdr-logo{height:42px;width:42px;flex-shrink:0;object-fit:contain;border-radius:6px;background:#000;padding:3px}
+.hdr-text{flex:1;min-width:0}
+.hdr-title{font-size:15px;font-weight:800;color:#1C1C1E;line-height:1.1;letter-spacing:-.01em}
+.hdr-sub{font-size:11px;color:#8E8E93;margin-top:1px}
+.hdr-zoom{display:flex;gap:3px;flex-shrink:0;background:#F4F2EF;border-radius:8px;padding:2px}
+.hdr-zoom button{border:none;background:none;font-size:10px;font-weight:700;padding:5px 7px;border-radius:6px;cursor:pointer;color:#8E8E93;min-width:24px}
+.hdr-zoom button.on{background:#fff;color:#A01A1C;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.hdr-info{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid #E5E0DB;background:#fff;color:#A01A1C;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.hdr-info:active{background:#F4F2EF}
+.hdr-tabs{display:flex}
+.htab{flex:1;padding:9px 0;font-size:14px;font-weight:600;text-align:center;cursor:pointer;color:#8E8E93;border:none;border-bottom:2px solid transparent;background:none}
+.htab.active{color:#A01A1C;border-bottom-color:#A01A1C}
+
+/* ─── EXCEL-STYLE STOCK CHECK ─── */
+.sc-banner{background:#0B2545;color:#fff;padding:11px 14px;text-align:center;font-weight:800;letter-spacing:.03em;margin:12px 12px 0;border-radius:10px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.sc-banner .ico{font-size:18px}
+.sc-dateline{display:flex;margin:8px 12px 0;gap:8px}
+.sc-dateline > div{flex:1;background:#0B2545;color:#fff;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px}
+.sc-dateline .v{flex:1;background:#fff;color:#1C1C1E;border-radius:5px;padding:3px 8px;font-weight:700;font-size:11px;text-align:center}
+.sc-thead{display:grid;grid-template-columns:1fr 60px 78px 78px;gap:6px;margin:8px 12px 0;padding:10px 8px;background:#0B2545;color:#fff;border-radius:8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:center;align-items:center}
+.sc-thead .col-name{text-align:left;padding-left:6px}
+.sc-thead .col-min{background:transparent}
+.sc-thead .col-stock{background:#FF7A00;color:#fff;border-radius:4px;padding:4px 2px;font-size:9px;line-height:1.15}
+.sc-thead .col-ord{background:#F5C842;color:#1C1C1E;border-radius:4px;padding:4px 2px;font-size:9px;line-height:1.15}
+
+.sc-group{margin:0 12px}
+.sc-grouphd{margin-top:8px;background:#0B2545;color:#fff;padding:9px 12px;font-size:13px;font-weight:700;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:8px}
+.sc-grouphd .ico{font-size:15px}
+.sc-grouplist{background:#fff;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid #E5E0DB;border-top:none}
+.sc-row{display:grid;grid-template-columns:1fr 60px 78px 78px;gap:6px;padding:8px 8px;border-bottom:0.5px solid #F2F2F7;align-items:center;font-size:13px}
+.sc-row:last-child{border-bottom:none}
+.sc-row.zebra{background:#FAFAFA}
+.sc-name{font-size:13px;color:#1C1C1E;padding-left:6px;line-height:1.25;word-wrap:break-word;overflow-wrap:break-word}
+.sc-min{text-align:center;font-weight:600;color:#3A3A3C;font-size:13px}
+.sc-stock-cell{position:relative}
+.sc-stock-cell input{width:100%;border:1.5px solid #FFE0B8;border-radius:6px;background:#FFF7EC;text-align:center;padding:8px 4px;font-size:14px;font-weight:700;color:#A04500;outline:none;-moz-appearance:textfield;font-family:inherit}
+.sc-stock-cell input::-webkit-outer-spin-button,.sc-stock-cell input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sc-stock-cell input:focus{border-color:#FF7A00;background:#fff}
+.sc-stock-cell input::placeholder{color:#D8B889;font-weight:400}
+.sc-ord{text-align:center;font-weight:800;font-size:15px;padding:8px 4px;border-radius:6px;background:#FFF7C8;color:#7A5800}
+.sc-ord.zero{background:#F4F2EF;color:#C7C7CC;font-weight:500}
+.sc-ord.hot{background:#FFD3D3;color:#8B0000;animation:flashHot .8s ease-out}
+@keyframes flashHot{0%{background:#FF6B6B;color:#fff}100%{background:#FFD3D3;color:#8B0000}}
+
+.sc-footer{margin:14px 12px 0;background:#0B2545;color:#fff;padding:12px 14px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sc-footer-l{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.sc-footer-c{background:#FF3B30;color:#fff;font-size:24px;font-weight:800;padding:4px 16px;border-radius:6px;min-width:60px;text-align:center;font-variant-numeric:tabular-nums}
+.sc-footer-c.zero{background:#3A4C66}
+.sc-footer-r{font-size:12px;color:#A8B4C7}
+
+/* ─── ACTION BAR ─── */
+.abar{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:0.5px solid #E5E0DB;padding:10px 12px calc(10px + env(safe-area-inset-bottom));z-index:25}
+.abar-row{display:flex;gap:7px;align-items:stretch}
+.btn-rst{flex-shrink:0;padding:0 14px;border-radius:10px;border:1.5px solid #E5E0DB;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#8E8E93;white-space:nowrap}
+.btn-cpy{flex-shrink:0;padding:0 14px;border-radius:10px;border:1.5px solid #E5E0DB;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#1C1C1E}
+.btn-wa{flex:1;padding:11px 8px;border-radius:10px;border:none;background:#25D366;font-size:13px;font-weight:700;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;flex-direction:column;line-height:1.2}
+.btn-wa .wa-l1{font-size:12px;font-weight:700}
+.btn-wa .wa-l2{font-size:10px;font-weight:500;opacity:.92}
+.btn-wa:active{background:#1FB855}
+.btn-wa.disabled{background:#D1D1D6;cursor:default;color:#fff}
+.btn-wa.disabled:active{background:#D1D1D6}
+
+/* ─── SUPPLIERS TAB ─── */
+.sup-wrap{padding:14px 16px 20px}
+.sup-banner{padding:10px 13px;border-radius:10px;font-size:12px;line-height:1.5;background:#FBEFEF;color:#6B1112;border-left:3px solid #A01A1C;margin-bottom:14px}
+.sup-banner b{color:#A01A1C}
+.sup-card{background:#fff;border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 1px 0 rgba(0,0,0,.05);cursor:pointer}
+.sup-card:active{transform:scale(.99)}
+.sup-card-hd{padding:14px;display:flex;align-items:center;gap:12px}
+.sup-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.sup-info{flex:1;min-width:0}
+.sup-name{font-size:16px;font-weight:700;color:#1C1C1E}
+.sup-meta{font-size:11px;color:#8E8E93;margin-top:2px}
+.sup-cnt{background:#FFF7C8;color:#7A5800;padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;min-width:56px;text-align:center;line-height:1.2}
+.sup-cnt.zero{background:#F4F2EF;color:#C7C7CC;font-weight:600}
+.sup-cnt.hot{background:#FFD3D3;color:#8B0000}
+.sup-cnt small{display:block;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;opacity:.8;margin-top:1px}
+.sup-arrow{font-size:18px;color:#C7C7CC;flex-shrink:0;font-weight:300}
+
+.sup-back{display:flex;align-items:center;gap:8px;margin:0 12px 8px;padding:8px 4px;cursor:pointer;font-size:14px;font-weight:600;color:#A01A1C;background:none;border:none}
+.sup-contact{margin:0 12px 0;background:#fff;border-radius:12px;padding:13px 14px;border:1px solid #E5E0DB}
+.sup-contact-hd{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.sup-contact-name{font-size:15px;font-weight:700;color:#1C1C1E;flex:1}
+.sup-contact-row{font-size:12px;color:#3A3A3C;line-height:1.5;margin:3px 0 0 20px}
+.sup-contact-row a{color:#A01A1C;text-decoration:none;font-weight:600}
+.sup-contact-meta{font-size:11px;color:#A8A29B;margin-top:7px;padding-top:7px;border-top:0.5px solid #F2F2F7}
+
+/* ─── MODAL (help & detail) ─── */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:100}
+.mdl{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;max-height:90vh;overflow-y:auto;padding:20px 16px 40px}
+.mdl-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.mdl-title{font-size:16px;font-weight:700;flex:1}
+.btn-x{width:32px;height:32px;border-radius:50%;border:none;background:#F4F2EF;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8E8E93;padding:0;line-height:1;flex-shrink:0}
+.lang-btn{border:none;font-size:11px;font-weight:700;padding:6px 11px;border-radius:12px;cursor:pointer;flex-shrink:0}
+.lang-btn.on{background:#A01A1C;color:#fff}
+.lang-btn.off{background:#F4F2EF;color:#8E8E93}
+.guide-step{display:flex;gap:12px;margin-bottom:14px}
+.guide-n{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#A01A1C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.guide-h{font-size:14px;font-weight:700;margin-bottom:3px}
+.guide-b{font-size:13px;line-height:1.5;color:#3A3A3C}
+.guide-b b{color:#1C1C1E}
+.guide-box{padding:10px 12px;border-radius:10px;background:#FBEFEF;margin-top:8px}
+.guide-box-h{font-size:13px;font-weight:700;color:#6B1112;margin-bottom:3px}
+.guide-box-b{font-size:12px;line-height:1.5;color:#6B1112}
+.guide-sign{font-size:12px;color:#8E8E93;text-align:center;margin-top:14px;padding-top:12px;border-top:0.5px solid #F2F2F7;line-height:1.5}
+
+/* Toasts */
+.toast{position:fixed;bottom:170px;left:50%;transform:translateX(-50%);background:#1C1C1E;color:#fff;padding:11px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:slideUp .3s ease-out}
+@keyframes slideUp{from{transform:translate(-50%,20px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#A01A1C">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#A01A1C"/>
+    <g transform="translate(600 400)">
+      <rect x="-220" y="-280" width="440" height="560" rx="36" fill="#fff"/>
+      <text x="0" y="-180" font-family="sans-serif" font-size="36" font-weight="800" fill="#A01A1C" text-anchor="middle">MISTER</text>
+      <text x="0" y="-130" font-family="sans-serif" font-size="36" font-weight="800" fill="#1C1C1E" text-anchor="middle">LASAGNA</text>
+      <text x="0" y="-80" font-family="sans-serif" font-size="20" font-weight="600" fill="#8E8E93" text-anchor="middle">STOCK CHECK</text>
+      <rect x="-170" y="-40" width="340" height="40" rx="6" fill="#0B2545"/>
+      <rect x="-170" y="10" width="200" height="40" rx="6" fill="#fff" stroke="#E5E0DB"/>
+      <rect x="40" y="10" width="60" height="40" rx="6" fill="#FFF7EC"/>
+      <rect x="110" y="10" width="60" height="40" rx="6" fill="#FFF7C8"/>
+      <rect x="-170" y="60" width="200" height="40" rx="6" fill="#FAFAFA" stroke="#E5E0DB"/>
+      <rect x="40" y="60" width="60" height="40" rx="6" fill="#FFF7EC"/>
+      <rect x="110" y="60" width="60" height="40" rx="6" fill="#FFD3D3"/>
+      <rect x="-170" y="140" width="340" height="60" rx="12" fill="#25D366"/>
+      <text x="0" y="178" font-family="sans-serif" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">📱 WhatsApp</text>
+    </g>
+  </svg>
+</template>
+<ext-resource-dependency src="mister_lasagna_logo.svg" type="image" />
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-top">
+    <img class="hdr-logo" src="mister_lasagna_logo.svg" alt="Mister Lasagna">
+    <div class="hdr-text"><div class="hdr-title">Mister Lasagna</div><div class="hdr-sub">Leicester Square</div></div>
+    <div class="hdr-zoom" role="group" aria-label="Dimensione testo">
+      <button data-z="s" onclick="setZoom('s')">A</button>
+      <button data-z="m" onclick="setZoom('m')" class="on">A</button>
+      <button data-z="l" onclick="setZoom('l')">A</button>
+    </div>
+    <button class="hdr-info" onclick="openHelp()" title="Aiuto" aria-label="Aiuto">ⓘ</button>
+  </div>
+  <div class="hdr-tabs">
+    <button class="htab active" onclick="setView('stock',this)">📋 Stock Check</button>
+    <button class="htab" onclick="setView('sup',this)">🚚 Fornitori</button>
+  </div>
+</div>
+<div id="main"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DATI — Tutti gli ITEMS con id univoco. Drinks core (acqua/Pellegrino)
+// hanno UN solo id e compaiono in Stock Check + Casa Julia + Zaino
+// ═══════════════════════════════════════════════════════════════════
+
+// gruppi Stock Check (replica dell'Excel)
+var STOCK_GROUPS = [
+  {id:'lasagne', name:'LASAGNE', icon:'🍝', items:[
+    {id:'l_bol',name:'Bolognese',min:61},
+    {id:'l_car',name:'Carbonara',min:26},
+    {id:'l_pes',name:'Pesto',min:9},
+    {id:'l_fun',name:'Funghi',min:10},
+    {id:'l_ibe',name:'Iberica',min:9},
+    {id:'l_gen',name:'Genovese',min:8},
+    {id:'l_sic',name:'Siciliana',min:8},
+    {id:'l_tar',name:'Tartufo',min:7},
+    {id:'l_spi',name:'Spinaci',min:7},
+    {id:'l_pep',name:'Pepperoni',min:7},
+    {id:'l_nap',name:'Napoletana',min:7},
+    {id:'l_ama',name:'Amatriciana',min:6},
+    {id:'l_veg',name:'Vegana',min:6},
+    {id:'l_cal',name:'Calabrese',min:6},
+    {id:'l_ham',name:'Ham & Cheese',min:5},
+    {id:'l_zuc',name:'Zucca & Gorgonzola',min:4},
+    {id:'l_arr',name:'Arrabbiata',min:3},
+    {id:'l_pug',name:'Pugliese',min:3},
+    {id:'l_sal',name:'Salmone & Guacamole',min:2},
+    {id:'l_ner',name:'Nerano',min:2},
+    {id:'l_car2',name:'Carciofi',min:2},
+    {id:'l_gf',name:'Gluten Friendly NGCI',min:1}
+  ]},
+  {id:'pasta', name:'PASTA', icon:'🍝', items:[
+    {id:'p_tag',name:'Tagliatelle',min:20},
+    {id:'p_gno',name:'Gnocchi',min:4},
+    {id:'p_brv',name:'Beef Ravioli',min:2},
+    {id:'p_prv',name:'Pumpkin Ravioli',min:2}
+  ]},
+  {id:'topping', name:'TOPPINGS', icon:'🧄', items:[
+    {id:'t_bol',name:'Bolognese',min:11},
+    {id:'t_arr',name:'Arrabbiata Tomato',min:5},
+    {id:'t_pes',name:'Pesto',min:4},
+    {id:'t_par',name:'Parmigiano Added',min:4},
+    {id:'t_alf',name:'Alfredo',min:3},
+    {id:'t_cmu',name:'Creamy Mushrooms',min:2},
+    {id:'t_btr',name:'Black Truffle',min:2},
+    {id:'t_4fo',name:'4 Formaggi',min:2},
+    {id:'t_ama',name:'Amatriciana',min:1},
+    {id:'t_gen',name:'Genovese',min:1}
+  ]},
+  {id:'arancini', name:'ARANCINI', icon:'🍊', items:[
+    {id:'a_spi',name:'Spinach & Mozzarella',min:2},
+    {id:'a_saf',name:'Saffron, Mozzarella & Ham',min:2},
+    {id:'a_bol',name:'Bolognese Sauce & Mozzarella',min:2}
+  ]},
+  {id:'acqua', name:'ACQUA', icon:'💧', items:[
+    {id:'d_panna',name:'Still (Panna)',min:22},
+    {id:'d_spk',name:'Sparkling (S.Pellegrino)',min:7}
+  ]},
+  {id:'pellegrino', name:'S.PELLEGRINO', icon:'🍋', items:[
+    {id:'d_lemon',name:'Lemon',min:8},
+    {id:'d_orange',name:'Orange',min:5},
+    {id:'d_pomegr',name:'Pomegranate',min:3},
+    {id:'d_blood',name:'Blood Orange',min:2},
+    {id:'d_mint',name:'Lemon/Mint',min:2}
+  ]}
+];
+
+// Drinks NON-core (extra) per Casa Julia & Zaino — non sono nello Stock Check
+var EXTRA_DRINKS = [
+  {id:'d_coca',name:'Coca Cola (lattina)',min:0},
+  {id:'d_cocazero',name:'Coca Zero (lattina)',min:0},
+  {id:'d_lemonade',name:'S.Pellegrino Lemonade (lattina)',min:0},
+  {id:'d_aranciata',name:'S.Pellegrino Aranciata (lattina)',min:0},
+  {id:'d_moretti',name:'Birra Moretti',min:0},
+  {id:'d_peroni',name:'Peroni Nastro Azzurro',min:0},
+  {id:'d_sanmig',name:'San Miguel (bottiglia)',min:0},
+  {id:'d_cider',name:'Cider Mela Rossa',min:0},
+  {id:'d_apple',name:'Appleteiser',min:0},
+  {id:'d_gingerb',name:'Ginger Beer (lattina)',min:0},
+  {id:'d_gingera',name:'Ginger Ale (bottiglia)',min:0},
+  {id:'d_schtonic',name:'Schweppes Tonic 200ml',min:0},
+  {id:'d_schsoda',name:'Schweppes Soda 200ml',min:0}
+];
+
+// Packaging — Donovan
+var PACKAGING = [
+  {id:'p_takeaw',name:'Take Away Carrier brown 250x140x300 (x250)',min:0},
+  {id:'p_pkmed',name:'Med Food Box PE Lined 150x124x60 (x260)',min:0},
+  {id:'p_pklge',name:'Lge Food To Go Box 185x140x60 (x210)',min:0},
+  {id:'p_pkbiofl',name:'Med Window Bioflute Hinged Box (x260)',min:0},
+  {id:'p_mwcont',name:'Microwave Containers & Lids 650cc (x250)',min:0},
+  {id:'p_napwh',name:'Tovaglioli bianchi 40cm Airlaid (10x50)',min:0},
+  {id:'p_napbk',name:'Tovaglioli neri 24cm 2-Ply (x4000)',min:0},
+  {id:'p_cups12',name:'Bicchieri caffè 12oz Double Wall (20x25)',min:0},
+  {id:'p_cups16',name:'Bicchieri 16oz Double Wall (20x25)',min:0},
+  {id:'p_cupspet',name:'Bicchieri PET trasparenti 12/14oz (x1000)',min:0},
+  {id:'p_wknife',name:'Coltelli legno (10x100)',min:0},
+  {id:'p_wfork',name:'Forchette legno (10x100)',min:0},
+  {id:'p_strawbk',name:'Cannucce nere 200x6mm (x250)',min:0},
+  {id:'p_tillr',name:'Rotoli POS 80x80x17.5mm (x20)',min:0},
+  {id:'p_ublabel',name:'Etichette Use By 51x51mm (x500)',min:0}
+];
+
+// FORNITORI — quali item vendono
+var DRINK_IDS = [
+  'd_panna','d_spk','d_lemon','d_orange','d_pomegr','d_blood','d_mint', // core
+  'd_coca','d_cocazero','d_lemonade','d_aranciata',                      // soft
+  'd_moretti','d_peroni','d_sanmig','d_cider',                           // birre
+  'd_apple','d_gingerb','d_gingera','d_schtonic','d_schsoda'             // misc
+];
+var PACK_IDS = PACKAGING.map(function(p){return p.id;});
+
+var SUPPLIERS = [
+  {id:'cj',name:'Casa Julia',dot:'#3C3489',role:'Bevande (preferenziale)',
+   email:'elaine@casajulia.co.uk',phone:null,ref:'Elaine',
+   cutoff:'12:00',min:'12 casse',consegna:'Lun · Mer · Ven',
+   itemIds:DRINK_IDS},
+  {id:'za',name:'Zaino Food',dot:'#085041',role:'Bevande (backup se OOS)',
+   email:'leonardo.direnzo@zainofood.co.uk',phone:'+44 7984 875623',ref:'Leonardo',
+   cutoff:'17:30 (max 18:00)',min:'£100',consegna:'Lun · Ven',
+   itemIds:DRINK_IDS},
+  {id:'donov',name:'Donovan Bros',dot:'#3D5A80',role:'Packaging',
+   email:'da confermare',phone:'da confermare',ref:null,
+   cutoff:'16:00',min:'da confermare',consegna:'Mercoledì',
+   itemIds:PACK_IDS}
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// LOOKUPS (item per id)
+// ═══════════════════════════════════════════════════════════════════
+var ALL_ITEMS = {};
+STOCK_GROUPS.forEach(function(g){g.items.forEach(function(it){ALL_ITEMS[it.id]=it;});});
+EXTRA_DRINKS.forEach(function(it){ALL_ITEMS[it.id]=it;});
+PACKAGING.forEach(function(it){ALL_ITEMS[it.id]=it;});
+
+// ═══════════════════════════════════════════════════════════════════
+// STATO — Persiste in localStorage. Reset = svuota.
+// stock[id] = numero (stock rimanente). undefined = vuoto/non controllato.
+// ═══════════════════════════════════════════════════════════════════
+var state = {
+  stock:{},
+  view:'stock',     // 'stock' | 'sup' | 'sup:<id>'
+  zoom:'m',
+  helpOpen:false,
+  helpLang:'it'
+};
+
+function loadState(){
+  try{
+    var s=localStorage.getItem('ml_stock');if(s)state.stock=JSON.parse(s)||{};
+    var z=localStorage.getItem('ml_zoom');if(z)state.zoom=z;
+    var l=localStorage.getItem('ml_help_lang');if(l)state.helpLang=l;
+  }catch(e){state.stock={};}
+  document.documentElement.setAttribute('data-zoom',state.zoom);
+  document.querySelectorAll('.hdr-zoom button').forEach(function(b){b.classList.toggle('on',b.dataset.z===state.zoom);});
+}
+function saveStock(){try{localStorage.setItem('ml_stock',JSON.stringify(state.stock));}catch(e){}}
+function setZoom(z){state.zoom=z;document.documentElement.setAttribute('data-zoom',z);try{localStorage.setItem('ml_zoom',z);}catch(e){}document.querySelectorAll('.hdr-zoom button').forEach(function(b){b.classList.toggle('on',b.dataset.z===z);});}
+
+function getStock(id){var v=state.stock[id];return (v===undefined||v===null||v==='')?null:Number(v);}
+function getOrder(id){
+  var min=ALL_ITEMS[id].min;
+  var st=getStock(id);
+  if(st===null)return 0;
+  return Math.max(0,min-st);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INPUT HANDLERS
+// ═══════════════════════════════════════════════════════════════════
+function onStockInput(id,val,el){
+  if(val===''||val==null){delete state.stock[id];}
+  else{
+    var n=parseInt(val,10);
+    if(isNaN(n)||n<0)n=0;
+    state.stock[id]=n;
+  }
+  saveStock();
+  // Update live tutte le occorrenze di questo item (sincronia drinks core)
+  document.querySelectorAll('[data-stock-input="'+id+'"]').forEach(function(inp){if(inp!==el)inp.value=state.stock[id]==null?'':state.stock[id];});
+  // Update "da ordinare" celle
+  var ord=getOrder(id);
+  var prevOrd=el.getAttribute('data-prev-ord');
+  document.querySelectorAll('[data-ord="'+id+'"]').forEach(function(cell){
+    cell.textContent=ord;
+    cell.classList.toggle('zero',ord===0);
+    // flash se passa da 0 a >0
+    if(ord>0 && prevOrd==='0'){cell.classList.add('hot');setTimeout(function(){cell.classList.remove('hot');},800);}
+  });
+  el.setAttribute('data-prev-ord',String(ord));
+  // Update tutti i totali / contatori sezione
+  updateAllCounters();
+}
+
+function updateAllCounters(){
+  // Totale Stock Check
+  var totSC=0;
+  ['lasagne','pasta','topping','arancini','acqua','pellegrino'].forEach(function(gid){
+    var g=STOCK_GROUPS.find(function(x){return x.id===gid;});
+    g.items.forEach(function(it){if(getOrder(it.id)>0)totSC++;});
+  });
+  var foot=document.getElementById('sc-footer-count');
+  if(foot){foot.textContent=totSC;foot.classList.toggle('zero',totSC===0);}
+  // Contatori action bar WhatsApp
+  updateActionBar();
+  // Contatori fornitori (vista lista)
+  SUPPLIERS.forEach(function(sup){
+    var c=0;sup.itemIds.forEach(function(id){if(getOrder(id)>0)c++;});
+    var el=document.getElementById('sup-cnt-'+sup.id);
+    if(el){
+      el.innerHTML=c+'<small>'+(c===1?'item':'items')+'</small>';
+      el.classList.toggle('zero',c===0);
+      el.classList.toggle('hot',c>0);
+    }
+  });
+}
+
+function resetAll(){
+  if(!confirm('Cancellare tutti i valori di stock inseriti?\n(I dati resteranno persi.)'))return;
+  state.stock={};saveStock();render();showToast('Stock azzerato');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MESSAGGIO WHATSAPP
+// ═══════════════════════════════════════════════════════════════════
+function formatDate(){
+  var d=new Date();
+  var dd=String(d.getDate()).padStart(2,'0');
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var yy=d.getFullYear();
+  return dd+'/'+mm+'/'+yy;
+}
+
+function buildMsg(opts){
+  // opts: {title, groups:[{name,icon,ids:[]}], footer}
+  var lines=[];
+  lines.push(opts.title);
+  lines.push('📅 '+formatDate()+' · Mister Lasagna Leicester Sq');
+  lines.push('');
+  var totItems=0,totQty=0;
+  opts.groups.forEach(function(g){
+    var ords=g.ids.map(function(id){return {id:id,n:getOrder(id),it:ALL_ITEMS[id]};}).filter(function(x){return x.n>0;});
+    if(!ords.length)return;
+    lines.push(g.icon+' '+g.name.toUpperCase());
+    ords.forEach(function(x){
+      lines.push('• '+x.it.name+' — '+x.n);
+      totItems++;totQty+=x.n;
+    });
+    lines.push('');
+  });
+  if(totItems===0)return null;
+  lines.push('Totale: '+totItems+(totItems===1?' articolo':' articoli')+' · '+totQty+' pz');
+  return lines.join('\n');
+}
+
+function sendMsg(msg){
+  if(!msg){showToast('Nessun articolo da ordinare');return;}
+  var url='https://wa.me/?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+}
+function copyMsg(msg){
+  if(!msg){showToast('Nessun articolo da ordinare');return;}
+  navigator.clipboard.writeText(msg).then(function(){showToast('Copiato negli appunti');},function(){alert('Copia non riuscita.');});
+}
+
+// Stock Check: 2 pulsanti
+function buildMsgCucine(){
+  return buildMsg({
+    title:'🚚 Richiesta delivery — Cucine NH/Chelsea',
+    groups:[
+      {name:'Lasagne',icon:'🍝',ids:STOCK_GROUPS.find(function(g){return g.id==='lasagne';}).items.map(function(i){return i.id;})},
+      {name:'Pasta',icon:'🍝',ids:STOCK_GROUPS.find(function(g){return g.id==='pasta';}).items.map(function(i){return i.id;})},
+      {name:'Toppings',icon:'🧄',ids:STOCK_GROUPS.find(function(g){return g.id==='topping';}).items.map(function(i){return i.id;})},
+      {name:'Arancini',icon:'🍊',ids:STOCK_GROUPS.find(function(g){return g.id==='arancini';}).items.map(function(i){return i.id;})}
+    ]
+  });
+}
+function buildMsgDrinks(){
+  return buildMsg({
+    title:'🥤 Ordine drinks — Casa Julia / Zaino',
+    groups:[
+      {name:'Acqua',icon:'💧',ids:STOCK_GROUPS.find(function(g){return g.id==='acqua';}).items.map(function(i){return i.id;})},
+      {name:'S.Pellegrino',icon:'🍋',ids:STOCK_GROUPS.find(function(g){return g.id==='pellegrino';}).items.map(function(i){return i.id;})}
+    ]
+  });
+}
+// Fornitore singolo
+function buildMsgSup(sup){
+  // raggruppa per macro-categoria
+  var ids=sup.itemIds;
+  return buildMsg({
+    title:'📦 Ordine '+sup.name,
+    groups:[{name:sup.role,icon:'•',ids:ids}]
+  });
+}
+
+function updateActionBar(){
+  var v=state.view;
+  if(v==='stock'){
+    var c1=countOrderInIds(STOCK_GROUPS.filter(function(g){return ['lasagne','pasta','topping','arancini'].indexOf(g.id)>=0;}).flatMap(function(g){return g.items.map(function(i){return i.id;});}));
+    var c2=countOrderInIds(STOCK_GROUPS.filter(function(g){return ['acqua','pellegrino'].indexOf(g.id)>=0;}).flatMap(function(g){return g.items.map(function(i){return i.id;});}));
+    var b1=document.getElementById('btn-wa-cucine');
+    var b2=document.getElementById('btn-wa-drinks');
+    if(b1){
+      b1.classList.toggle('disabled',c1===0);
+      b1.querySelector('.wa-l2').textContent=c1===0?'nessuna richiesta':c1+' '+(c1===1?'articolo':'articoli');
+    }
+    if(b2){
+      b2.classList.toggle('disabled',c2===0);
+      b2.querySelector('.wa-l2').textContent=c2===0?'nessun drink':c2+' '+(c2===1?'articolo':'articoli');
+    }
+  }else if(v.indexOf('sup:')===0){
+    var sid=v.slice(4);
+    var sup=SUPPLIERS.find(function(s){return s.id===sid;});
+    if(!sup)return;
+    var c=countOrderInIds(sup.itemIds);
+    var b=document.getElementById('btn-wa-sup');
+    if(b){
+      b.classList.toggle('disabled',c===0);
+      b.querySelector('.wa-l2').textContent=c===0?'nessun articolo':c+' '+(c===1?'articolo':'articoli');
+    }
+  }
+}
+function countOrderInIds(ids){var c=0;ids.forEach(function(id){if(getOrder(id)>0)c++;});return c;}
+
+// ═══════════════════════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════════════════════
+function setView(v,btn){
+  state.view=v;
+  document.querySelectorAll('.htab').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  else{
+    // sup:xxx → highlight Fornitori
+    if(v.indexOf('sup')===0){document.querySelectorAll('.htab')[1].classList.add('active');}
+    else{document.querySelectorAll('.htab')[0].classList.add('active');}
+  }
+  render();
+  window.scrollTo(0,0);
+}
+
+function rowHtml(item,zebra){
+  var st=state.stock[item.id];
+  var ord=getOrder(item.id);
+  var min=item.min;
+  return '<div class="sc-row'+(zebra?' zebra':'')+'">'
+    +'<div class="sc-name">'+escapeHtml(item.name)+'</div>'
+    +'<div class="sc-min">'+(min>0?min:'—')+'</div>'
+    +'<div class="sc-stock-cell"><input type="number" inputmode="numeric" min="0" placeholder="—" data-stock-input="'+item.id+'" data-prev-ord="'+ord+'" value="'+(st==null?'':st)+'" oninput="onStockInput(\''+item.id+'\',this.value,this)"></div>'
+    +'<div class="sc-ord'+(ord===0?' zero':'')+'" data-ord="'+item.id+'">'+ord+'</div>'
+    +'</div>';
+}
+
+function renderStockCheck(){
+  var h='<div class="sc-banner"><span class="ico">🐌</span> MISTER LASAGNA · STOCK CHECK</div>';
+  h+='<div class="sc-dateline"><div>📅 DATA <span class="v">'+formatDate()+'</span></div></div>';
+  h+='<div class="sc-thead"><div class="col-name">PRODOTTO</div><div class="col-min">MIN</div><div class="col-stock">📦 STOCK RIMANENTE</div><div class="col-ord">🛒 DA ORDINARE</div></div>';
+  STOCK_GROUPS.forEach(function(g){
+    h+='<div class="sc-group">';
+    h+='<div class="sc-grouphd"><span class="ico">'+g.icon+'</span>'+g.name+'</div>';
+    h+='<div class="sc-grouplist">';
+    g.items.forEach(function(it,i){h+=rowHtml(it,i%2===1);});
+    h+='</div></div>';
+  });
+  // Footer totale
+  var totSC=0;
+  STOCK_GROUPS.forEach(function(g){g.items.forEach(function(it){if(getOrder(it.id)>0)totSC++;});});
+  h+='<div class="sc-footer"><div class="sc-footer-l">🐌 Da ordinare</div><div class="sc-footer-c'+(totSC===0?' zero':'')+'" id="sc-footer-count">'+totSC+'</div><div class="sc-footer-r">articoli</div></div>';
+  // Action bar (2 pulsanti)
+  var c1=countOrderInIds(STOCK_GROUPS.filter(function(g){return ['lasagne','pasta','topping','arancini'].indexOf(g.id)>=0;}).flatMap(function(g){return g.items.map(function(i){return i.id;});}));
+  var c2=countOrderInIds(STOCK_GROUPS.filter(function(g){return ['acqua','pellegrino'].indexOf(g.id)>=0;}).flatMap(function(g){return g.items.map(function(i){return i.id;});}));
+  h+='<div class="abar"><div class="abar-row">'
+    +'<button class="btn-rst" onclick="resetAll()" title="Reset">↻</button>'
+    +'<button class="btn-wa'+(c1===0?' disabled':'')+'" id="btn-wa-cucine" onclick="onSendCucine()"><span class="wa-l1">📱 Cucine NH/Chelsea</span><span class="wa-l2">'+(c1===0?'nessuna richiesta':c1+' '+(c1===1?'articolo':'articoli'))+'</span></button>'
+    +'<button class="btn-wa'+(c2===0?' disabled':'')+'" id="btn-wa-drinks" onclick="onSendDrinks()"><span class="wa-l1">📱 Drinks</span><span class="wa-l2">'+(c2===0?'nessun drink':c2+' '+(c2===1?'articolo':'articoli'))+'</span></button>'
+    +'</div></div>';
+  return h;
+}
+
+function onSendCucine(){var m=buildMsgCucine();sendMsg(m);}
+function onSendDrinks(){var m=buildMsgDrinks();sendMsg(m);}
+
+function renderSupplierList(){
+  var h='<div class="sup-wrap">';
+  h+='<div class="sup-banner"><b>3 fornitori esterni</b> per drinks e packaging. Per <b>lasagne / pasta / toppings / arancini</b> torna al tab 📋 Stock Check (arrivano dalle cucine).</div>';
+  SUPPLIERS.forEach(function(sup){
+    var c=0;sup.itemIds.forEach(function(id){if(getOrder(id)>0)c++;});
+    h+='<div class="sup-card" onclick="setView(\'sup:'+sup.id+'\')">';
+    h+='<div class="sup-card-hd">';
+    h+='<span class="sup-dot" style="background:'+sup.dot+'"></span>';
+    h+='<div class="sup-info"><div class="sup-name">'+sup.name+'</div><div class="sup-meta">'+sup.role+' · '+sup.itemIds.length+' articoli</div></div>';
+    h+='<div class="sup-cnt'+(c===0?' zero':' hot')+'" id="sup-cnt-'+sup.id+'">'+c+'<small>'+(c===1?'item':'items')+'</small></div>';
+    h+='<div class="sup-arrow">›</div>';
+    h+='</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+function renderSupplierDetail(sid){
+  var sup=SUPPLIERS.find(function(s){return s.id===sid;});
+  if(!sup)return renderSupplierList();
+  var h='';
+  h+='<button class="sup-back" onclick="setView(\'sup\')">‹ Tutti i fornitori</button>';
+
+  // Contatto card
+  h+='<div class="sup-contact">';
+  h+='<div class="sup-contact-hd"><span class="sup-dot" style="background:'+sup.dot+'"></span><span class="sup-contact-name">'+sup.name+'</span></div>';
+  if(sup.ref)h+='<div class="sup-contact-row">👤 '+sup.ref+'</div>';
+  if(sup.email && sup.email!=='da confermare')h+='<div class="sup-contact-row">✉️ <a href="mailto:'+sup.email+'">'+sup.email+'</a></div>';
+  else if(sup.email)h+='<div class="sup-contact-row">✉️ <span style="color:#A8A29B">'+sup.email+'</span></div>';
+  if(sup.phone && sup.phone!=='da confermare')h+='<div class="sup-contact-row">📞 <a href="tel:'+sup.phone.replace(/\s/g,'')+'">'+sup.phone+'</a></div>';
+  else if(sup.phone)h+='<div class="sup-contact-row">📞 <span style="color:#A8A29B">'+sup.phone+'</span></div>';
+  h+='<div class="sup-contact-meta">⏰ cut-off '+sup.cutoff+' · 📦 min '+sup.min+' · 🚚 '+sup.consegna+'</div>';
+  h+='</div>';
+
+  // Stock check filtrato — stesso schema dell'Excel
+  h+='<div class="sc-thead" style="margin-top:14px"><div class="col-name">PRODOTTO</div><div class="col-min">MIN</div><div class="col-stock">📦 STOCK RIMANENTE</div><div class="col-ord">🛒 DA ORDINARE</div></div>';
+  h+='<div class="sc-group">';
+  h+='<div class="sc-grouphd"><span class="ico">'+(sup.id==='donov'?'📦':'🥤')+'</span>'+sup.role+'</div>';
+  h+='<div class="sc-grouplist">';
+  sup.itemIds.forEach(function(id,i){h+=rowHtml(ALL_ITEMS[id],i%2===1);});
+  h+='</div></div>';
+
+  // Footer + WA
+  var c=0;sup.itemIds.forEach(function(id){if(getOrder(id)>0)c++;});
+  h+='<div class="sc-footer"><div class="sc-footer-l">Da ordinare</div><div class="sc-footer-c'+(c===0?' zero':'')+'">'+c+'</div><div class="sc-footer-r">articoli</div></div>';
+  h+='<div class="abar"><div class="abar-row">'
+    +'<button class="btn-rst" onclick="resetAll()" title="Reset">↻</button>'
+    +'<button class="btn-wa'+(c===0?' disabled':'')+'" id="btn-wa-sup" onclick="onSendSup(\''+sup.id+'\')"><span class="wa-l1">📱 Invia ordine '+sup.name+'</span><span class="wa-l2">'+(c===0?'nessun articolo':c+' '+(c===1?'articolo':'articoli'))+'</span></button>'
+    +'</div></div>';
+  return h;
+}
+
+function onSendSup(sid){var sup=SUPPLIERS.find(function(s){return s.id===sid;});var m=buildMsgSup(sup);sendMsg(m);}
+
+// ═══════════════════════════════════════════════════════════════════
+// HELP MODAL (IT/EN)
+// ═══════════════════════════════════════════════════════════════════
+function openHelp(){state.helpOpen=true;renderModal();}
+function closeHelp(){state.helpOpen=false;renderModal();}
+function setHelpLang(l){state.helpLang=l;try{localStorage.setItem('ml_help_lang',l);}catch(e){}renderModal();}
+
+function renderHelp(){
+  if(!state.helpOpen)return'';
+  var isIt=state.helpLang==='it';
+  var t=isIt?{
+    title:'Come usare l\'app',
+    s1:{n:'1',h:'Conta lo stock',b:'Per ogni prodotto inserisci nella casella arancione <b>quanti pezzi sono rimasti</b>. L\'app calcola da sola quanti ne servono (MIN − stock).'},
+    s2:{n:'2',h:'Cucine vs Drinks',b:'<b>Lasagne, pasta, toppings, arancini</b> arrivano dalle cucine NH/Chelsea → pulsante <b>📱 Cucine</b>.<br><b>Acqua e S.Pellegrino</b> li ordini dai fornitori → pulsante <b>📱 Drinks</b>.'},
+    s3:{n:'3',h:'WhatsApp',b:'Premi il pulsante verde → si apre WhatsApp con il <b>messaggio pronto</b> e ti chiede a chi mandarlo. Scegli dalla rubrica (NH, Chelsea, Casa Julia, Zaino…).'},
+    s4:{n:'4',h:'Fornitori',b:'Nel tab <b>🚚 Fornitori</b> trovi Casa Julia, Zaino e Donovan. Apri uno e inserisci lo stock come nel tab principale.'},
+    s5:{n:'5',h:'Casa Julia o Zaino?',b:'Per le bevande ordina sempre da <b>Casa Julia</b>. Se qualcosa è out of stock, vai sul tab Zaino e ordinalo da lì.'},
+    box:{h:'💾 I numeri restano salvati',b:'Lo stock inserito resta in memoria finché non premi <b>↻ Reset</b>. Puoi chiudere e riaprire l\'app senza perdere niente.'},
+    sign:'Dubbi? Scrivi a Luigi 👍'
+  }:{
+    title:'How to use the app',
+    s1:{n:'1',h:'Count the stock',b:'For each product, type in the orange box <b>how many pieces are left</b>. The app calculates how many you need (MIN − stock).'},
+    s2:{n:'2',h:'Kitchens vs Drinks',b:'<b>Lasagne, pasta, toppings, arancini</b> come from NH/Chelsea kitchens → <b>📱 Kitchens</b> button.<br><b>Water and S.Pellegrino</b> are ordered from suppliers → <b>📱 Drinks</b> button.'},
+    s3:{n:'3',h:'WhatsApp',b:'Tap the green button → WhatsApp opens with the <b>message ready</b> and asks who to send it to. Pick from contacts (NH, Chelsea, Casa Julia, Zaino…).'},
+    s4:{n:'4',h:'Suppliers',b:'In the <b>🚚 Suppliers</b> tab you have Casa Julia, Zaino and Donovan. Open one and enter the stock like in the main tab.'},
+    s5:{n:'5',h:'Casa Julia or Zaino?',b:'For drinks always order from <b>Casa Julia</b>. If something is out of stock, go to Zaino and order it from there.'},
+    box:{h:'💾 Numbers stay saved',b:'The stock you entered stays in memory until you press <b>↻ Reset</b>. You can close and reopen the app without losing anything.'},
+    sign:'Questions? Text Luigi 👍'
+  };
+  function sec(s){return '<div class="guide-step"><div class="guide-n">'+s.n+'</div><div style="flex:1;min-width:0"><div class="guide-h">'+s.h+'</div><div class="guide-b">'+s.b+'</div></div></div>';}
+  var h='<div class="ovl" onclick="if(event.target===this)closeHelp()"><div class="mdl">';
+  h+='<div class="mdl-hd"><span class="mdl-title">📖 '+t.title+'</span>';
+  h+='<button class="lang-btn '+(isIt?'on':'off')+'" onclick="setHelpLang(\'it\')">IT</button>';
+  h+='<button class="lang-btn '+(!isIt?'on':'off')+'" onclick="setHelpLang(\'en\')">EN</button>';
+  h+='<button class="btn-x" onclick="closeHelp()">×</button></div>';
+  h+=sec(t.s1)+sec(t.s2)+sec(t.s3)+sec(t.s4)+sec(t.s5);
+  h+='<div class="guide-box"><div class="guide-box-h">'+t.box.h+'</div><div class="guide-box-b">'+t.box.b+'</div></div>';
+  h+='<div class="guide-sign">'+t.sign+'</div>';
+  h+='</div></div>';
+  return h;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Toast
+// ═══════════════════════════════════════════════════════════════════
+function showToast(msg){
+  var root=document.getElementById('toast-root');
+  root.innerHTML='<div class="toast">'+escapeHtml(msg)+'</div>';
+  setTimeout(function(){if(root)root.innerHTML='';},1600);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function renderModal(){document.getElementById('modal-root').innerHTML=renderHelp();}
+
+function render(){
+  var main='';
+  if(state.view==='stock')main=renderStockCheck();
+  else if(state.view==='sup')main=renderSupplierList();
+  else if(state.view.indexOf('sup:')===0)main=renderSupplierDetail(state.view.slice(4));
+  document.getElementById('main').innerHTML=main;
+  renderModal();
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>
