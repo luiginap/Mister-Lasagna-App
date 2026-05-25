@@ -59,6 +59,26 @@ html[data-zoom="l"] body{zoom:1.15}
 .sc-stock-cell input::placeholder{color:#D8B889;font-weight:400}
 .sc-ord{text-align:center;font-weight:800;font-size:15px;padding:8px 4px;border-radius:6px;background:#FFF7C8;color:#7A5800}
 .sc-ord.zero{background:#F4F2EF;color:#C7C7CC;font-weight:500}
+
+/* Free-order row (MIN=0): toggle + stepper */
+.sc-row.free{grid-template-columns:46px 1fr 124px}
+.sc-row.free .sc-name{padding-left:0}
+.sc-row.free.off .sc-name{text-decoration:line-through;color:#A8A29B}
+.sw{width:42px;height:24px;position:relative;cursor:pointer;flex-shrink:0;justify-self:center}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw-t{position:absolute;inset:0;border-radius:12px;background:#D1D1D6;transition:background .2s}
+.sw input:checked~.sw-t{background:#30D158}
+.sw-k{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw input:checked~.sw-k{transform:translateX(18px)}
+.qty{display:flex;align-items:center;gap:2px;justify-content:flex-end}
+.qty button{width:30px;height:30px;border-radius:50%;border:none;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#F2F2F7;color:#1C1C1E;flex-shrink:0;font-weight:600;padding:0;line-height:1}
+.qty button:active{background:#E5E5EA}
+.qty button.dec{color:#A01A1C}
+.qty button.inc{color:#30D158}
+.qty button:disabled{opacity:.3;cursor:default}
+.qty .qv{min-width:34px;text-align:center;font-size:15px;font-weight:700;color:#1C1C1E;font-variant-numeric:tabular-nums}
+.qty .qv.zero{color:#C7C7CC}
+.sc-row.free.off .qty{opacity:.4;pointer-events:none}
 .sc-ord.hot{background:#FFD3D3;color:#8B0000;animation:flashHot .8s ease-out}
 @keyframes flashHot{0%{background:#FF6B6B;color:#fff}100%{background:#FFD3D3;color:#8B0000}}
 
@@ -312,8 +332,9 @@ PACKAGING.forEach(function(it){ALL_ITEMS[it.id]=it;});
 // stock[id] = numero (stock rimanente). undefined = vuoto/non controllato.
 // ═══════════════════════════════════════════════════════════════════
 var state = {
-  stock:{},
-  view:'stock',     // 'stock' | 'sup' | 'sup:<id>'
+  stock:{},          // per item con MIN>0 → stock rimanente
+  order:{},          // per item con MIN=0 → {on:bool, qty:number}
+  view:'stock',      // 'stock' | 'sup' | 'sup:<id>'
   zoom:'m',
   helpOpen:false,
   helpLang:'it'
@@ -322,18 +343,24 @@ var state = {
 function loadState(){
   try{
     var s=localStorage.getItem('ml_stock');if(s)state.stock=JSON.parse(s)||{};
+    var o=localStorage.getItem('ml_order');if(o)state.order=JSON.parse(o)||{};
     var z=localStorage.getItem('ml_zoom');if(z)state.zoom=z;
     var l=localStorage.getItem('ml_help_lang');if(l)state.helpLang=l;
-  }catch(e){state.stock={};}
+  }catch(e){state.stock={};state.order={};}
   document.documentElement.setAttribute('data-zoom',state.zoom);
   document.querySelectorAll('.hdr-zoom button').forEach(function(b){b.classList.toggle('on',b.dataset.z===state.zoom);});
 }
 function saveStock(){try{localStorage.setItem('ml_stock',JSON.stringify(state.stock));}catch(e){}}
+function saveOrder(){try{localStorage.setItem('ml_order',JSON.stringify(state.order));}catch(e){}}
 function setZoom(z){state.zoom=z;document.documentElement.setAttribute('data-zoom',z);try{localStorage.setItem('ml_zoom',z);}catch(e){}document.querySelectorAll('.hdr-zoom button').forEach(function(b){b.classList.toggle('on',b.dataset.z===z);});}
 
 function getStock(id){var v=state.stock[id];return (v===undefined||v===null||v==='')?null:Number(v);}
+function getOrderState(id){var o=state.order[id];return o||{on:false,qty:0};}
 function getOrder(id){
   var min=ALL_ITEMS[id].min;
+  // Item con MIN=0 → modalità free order: solo se on, ritorna qty
+  if(min===0){var o=getOrderState(id);return o.on?Math.max(0,o.qty||0):0;}
+  // Item con MIN>0 → modalità stock check: MIN − stock
   var st=getStock(id);
   if(st===null)return 0;
   return Math.max(0,min-st);
@@ -390,8 +417,33 @@ function updateAllCounters(){
 }
 
 function resetAll(){
-  if(!confirm('Cancellare tutti i valori di stock inseriti?\n(I dati resteranno persi.)'))return;
-  state.stock={};saveStock();render();showToast('Stock azzerato');
+  if(!confirm('Cancellare tutti i valori inseriti?\n(Stock e quantità da ordinare saranno azzerati.)'))return;
+  state.stock={};state.order={};saveStock();saveOrder();render();showToast('Tutto azzerato');
+}
+
+function onToggleOrder(id,el){
+  var o=getOrderState(id);
+  o.on=!o.on;
+  if(!o.qty)o.qty=1; // primo tap: quantità di default 1
+  state.order[id]=o;saveOrder();
+  // Live re-render della singola riga
+  var row=el.closest('.sc-row');
+  if(row)row.classList.toggle('off',!o.on);
+  // Sincronizza tutte le occorrenze
+  document.querySelectorAll('[data-toggle-order="'+id+'"]').forEach(function(inp){if(inp!==el)inp.checked=o.on;});
+  document.querySelectorAll('[data-toggle-order="'+id+'"]').forEach(function(inp){var r=inp.closest('.sc-row');if(r)r.classList.toggle('off',!o.on);});
+  document.querySelectorAll('[data-qty-val="'+id+'"]').forEach(function(v){v.textContent=o.qty;v.classList.toggle('zero',o.qty===0);});
+  updateAllCounters();
+}
+function onQtyChange(id,delta){
+  var o=getOrderState(id);
+  if(!o.on){o.on=true;o.qty=Math.max(0,(o.qty||0)+delta);}
+  else{o.qty=Math.max(0,(o.qty||0)+delta);}
+  if(o.qty===0)o.on=false;
+  state.order[id]=o;saveOrder();
+  document.querySelectorAll('[data-qty-val="'+id+'"]').forEach(function(v){v.textContent=o.qty;v.classList.toggle('zero',o.qty===0);});
+  document.querySelectorAll('[data-toggle-order="'+id+'"]').forEach(function(inp){inp.checked=o.on;var r=inp.closest('.sc-row');if(r)r.classList.toggle('off',!o.on);});
+  updateAllCounters();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -451,7 +503,7 @@ function buildMsgCucine(){
 }
 function buildMsgDrinks(){
   return buildMsg({
-    title:'🥤 Ordine drinks — Casa Julia / Zaino',
+    title:'🥤 Ordine drinks',
     groups:[
       {name:'Acqua',icon:'💧',ids:STOCK_GROUPS.find(function(g){return g.id==='acqua';}).items.map(function(i){return i.id;})},
       {name:'S.Pellegrino',icon:'🍋',ids:STOCK_GROUPS.find(function(g){return g.id==='pellegrino';}).items.map(function(i){return i.id;})}
@@ -514,12 +566,26 @@ function setView(v,btn){
 }
 
 function rowHtml(item,zebra){
+  var min=item.min;
+  // Modalità free order (MIN=0): toggle + stepper
+  if(min===0){
+    var o=getOrderState(item.id);
+    return '<div class="sc-row free'+(zebra?' zebra':'')+(!o.on?' off':'')+'">'
+      +'<label class="sw"><input type="checkbox" data-toggle-order="'+item.id+'" '+(o.on?'checked':'')+' onchange="onToggleOrder(\''+item.id+'\',this)"><span class="sw-t"></span><span class="sw-k"></span></label>'
+      +'<div class="sc-name">'+escapeHtml(item.name)+'</div>'
+      +'<div class="qty">'
+      +'<button class="dec" '+(o.qty<=0?'disabled':'')+' onclick="onQtyChange(\''+item.id+'\',-1)">−</button>'
+      +'<div class="qv'+(o.qty===0?' zero':'')+'" data-qty-val="'+item.id+'">'+o.qty+'</div>'
+      +'<button class="inc" onclick="onQtyChange(\''+item.id+'\',1)">+</button>'
+      +'</div>'
+      +'</div>';
+  }
+  // Modalità stock check classica (MIN>0)
   var st=state.stock[item.id];
   var ord=getOrder(item.id);
-  var min=item.min;
   return '<div class="sc-row'+(zebra?' zebra':'')+'">'
     +'<div class="sc-name">'+escapeHtml(item.name)+'</div>'
-    +'<div class="sc-min">'+(min>0?min:'—')+'</div>'
+    +'<div class="sc-min">'+min+'</div>'
     +'<div class="sc-stock-cell"><input type="number" inputmode="numeric" min="0" placeholder="—" data-stock-input="'+item.id+'" data-prev-ord="'+ord+'" value="'+(st==null?'':st)+'" oninput="onStockInput(\''+item.id+'\',this.value,this)"></div>'
     +'<div class="sc-ord'+(ord===0?' zero':'')+'" data-ord="'+item.id+'">'+ord+'</div>'
     +'</div>';
@@ -620,7 +686,7 @@ function renderHelp(){
   var isIt=state.helpLang==='it';
   var t=isIt?{
     title:'Come usare l\'app',
-    s1:{n:'1',h:'Conta lo stock',b:'Per ogni prodotto inserisci nella casella arancione <b>quanti pezzi sono rimasti</b>. L\'app calcola da sola quanti ne servono (MIN − stock).'},
+    s1:{n:'1',h:'Conta lo stock',b:'Per i prodotti con MIN inserisci nella casella arancione <b>quanti pezzi sono rimasti</b>. L\'app calcola da sola quanti ne servono (MIN − stock).<br><br>Per i prodotti <b>senza MIN</b> (es. Donovan packaging, Coca Cola, birre): attiva il toggle ✅ e usa <b>− / +</b> per la quantità.'},
     s2:{n:'2',h:'Cucine vs Drinks',b:'<b>Lasagne, pasta, toppings, arancini</b> arrivano dalle cucine NH/Chelsea → pulsante <b>📱 Cucine</b>.<br><b>Acqua e S.Pellegrino</b> li ordini dai fornitori → pulsante <b>📱 Drinks</b>.'},
     s3:{n:'3',h:'WhatsApp',b:'Premi il pulsante verde → si apre WhatsApp con il <b>messaggio pronto</b> e ti chiede a chi mandarlo. Scegli dalla rubrica (NH, Chelsea, Casa Julia, Zaino…).'},
     s4:{n:'4',h:'Fornitori',b:'Nel tab <b>🚚 Fornitori</b> trovi Casa Julia, Zaino e Donovan. Apri uno e inserisci lo stock come nel tab principale.'},
@@ -629,7 +695,7 @@ function renderHelp(){
     sign:'Dubbi? Scrivi a Luigi 👍'
   }:{
     title:'How to use the app',
-    s1:{n:'1',h:'Count the stock',b:'For each product, type in the orange box <b>how many pieces are left</b>. The app calculates how many you need (MIN − stock).'},
+    s1:{n:'1',h:'Count the stock',b:'For items with MIN, type in the orange box <b>how many pieces are left</b>. The app calculates how many you need (MIN − stock).<br><br>For items <b>without MIN</b> (e.g. Donovan packaging, Coca Cola, beers): switch on the toggle ✅ and use <b>− / +</b> for the quantity.'},
     s2:{n:'2',h:'Kitchens vs Drinks',b:'<b>Lasagne, pasta, toppings, arancini</b> come from NH/Chelsea kitchens → <b>📱 Kitchens</b> button.<br><b>Water and S.Pellegrino</b> are ordered from suppliers → <b>📱 Drinks</b> button.'},
     s3:{n:'3',h:'WhatsApp',b:'Tap the green button → WhatsApp opens with the <b>message ready</b> and asks who to send it to. Pick from contacts (NH, Chelsea, Casa Julia, Zaino…).'},
     s4:{n:'4',h:'Suppliers',b:'In the <b>🚚 Suppliers</b> tab you have Casa Julia, Zaino and Donovan. Open one and enter the stock like in the main tab.'},
